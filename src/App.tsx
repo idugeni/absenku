@@ -1,10 +1,10 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { useAuth } from './contexts/useAuth';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContextType } from './contexts/AuthContextDefinition';
+import { AuthContextType } from '@/contexts/AuthContextDefinition';
 
 const AuthStatusChecker: React.FC = () => {
   const { currentUser, loading } = useAuth() as AuthContextType;
@@ -28,9 +28,11 @@ import Reports from '@/pages/Reports';
 import Settings from '@/pages/Settings';
 import PegawaiDetail from '@/pages/PegawaiDetail';
 import PegawaiNew from '@/pages/PegawaiNew';
+import PegawaiEdit from '@/pages/PegawaiEdit';
 import NotFound from '@/pages/NotFound';
 import PegawaiPage from '@/pages/Pegawai';
-import EventList from '@/components/events/EventList';
+// import EventList from '@/components/events/EventList'; // Hapus baris ini
+import Events from '@/pages/Events';
 
 function App() {
   return (
@@ -93,6 +95,16 @@ function App() {
               }
             />
             <Route
+              path="/pegawai/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <PegawaiEdit />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/pegawai/:id"
               element={
                 <ProtectedRoute>
@@ -107,7 +119,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <EventList />
+                    <Events />
                   </MainLayout>
                 </ProtectedRoute>
               }

@@ -23,6 +23,26 @@ interface Pegawai {
   updatedAt?: Date;
 }
 
+const getGradientColorClass = (id: string) => {
+  const colors = [
+    'from-blue-400 to-blue-600',
+    'from-green-400 to-green-600',
+    'from-purple-400 to-purple-600',
+    'from-pink-400 to-pink-600',
+    'from-indigo-400 to-indigo-600',
+    'from-yellow-400 to-yellow-600',
+    'from-red-400 to-red-600',
+    'from-teal-400 to-teal-600',
+    'from-orange-400 to-orange-600',
+  ];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash % colors.length);
+  return `bg-gradient-to-r ${colors[index]}`;
+};
+
 const PegawaiPage = () => {
   const { pegawai } = useAppFirestore();
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,12 +53,7 @@ const PegawaiPage = () => {
   };
 
   const filteredPegawai = useMemo(() => {
-    console.log('Pegawai data:', pegawai);
-    console.log('Search term:', searchTerm);
-    console.log('Filter status:', filterStatus);
-
     if (!Array.isArray(pegawai)) {
-      console.log('Pegawai is not an array, returning empty.');
       return []; // Return an empty array if pegawai is not an array
     }
     return pegawai.filter(p => {
@@ -103,21 +118,23 @@ const PegawaiPage = () => {
             <Card key={p.id} className="flex flex-col shadow-md hover:shadow-lg transition-shadow duration-200 ease-in-out overflow-hidden rounded-lg py-0">
               <CardHeader className="flex flex-col items-center justify-center p-6 flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                 <Avatar className="w-28 h-28 mb-3">
-                  <AvatarFallback className="bg-blue-600 text-white text-4xl font-semibold">
+                  <AvatarFallback className={`text-white text-4xl font-semibold ${getGradientColorClass(p.id!)}`}>
                     {p.nama.split(' ').map(n => n[0]).join('').substring(0, 2)}
                   </AvatarFallback>
                 </Avatar>
               </CardHeader>
               <div className="flex flex-col flex-grow">
-                <div className="p-5 border-b border-gray-200 dark:border-gray-700 text-center">
+                <div className="p-5 border-b border-gray-200 dark:border-gray-700 text-center flex flex-col items-center justify-center">
                   <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 break-words md:whitespace-normal">{p.nama}</CardTitle>
-                  <Badge variant="secondary" className="px-3 py-1 text-xs font-medium rounded-full">{p.jabatan}</Badge>
+                  <div className="flex flex-col items-center gap-2">
+                    <Badge className={`px-3 py-1 text-xs font-medium rounded-full ${getGradientColorClass(p.id!)} text-white`}>{p.jabatan}</Badge>
+                    <Badge className={`px-3 py-1 text-xs font-medium rounded-full ${getGradientColorClass(p.id!)} text-white`}>{p.nip}</Badge>
+                  </div>
                 </div>
-                <CardContent className="flex-grow text-sm text-foreground space-y-2 p-5 border-b border-gray-200 dark:border-gray-700">
-                  <p><span className="font-semibold text-gray-700 dark:text-gray-300">NIP:</span> <span className="break-all text-gray-800 dark:text-gray-200 md:whitespace-normal">{p.nip}</span></p>
-                  <p><span className="font-semibold text-gray-700 dark:text-gray-300">Email:</span> <span className="break-all text-gray-800 dark:text-gray-200 md:whitespace-normal">{p.email}</span></p>
-                  <p className="flex items-center"><span className="font-semibold text-gray-700 dark:text-gray-300 mr-2">Status:</span> <Badge variant={getStatusVariant(p.status)} className="px-3 py-1 text-xs font-medium rounded-full">{p.status.charAt(0).toUpperCase() + p.status.slice(1).replace('_', ' ')}</Badge></p>
-                  <p><span className="font-semibold text-gray-700 dark:text-gray-300">Bergabung:</span> <span className="break-words text-gray-800 dark:text-gray-200">{p.tanggalBergabung ? new Date(p.tanggalBergabung).toLocaleDateString('id-ID') : 'N/A'}</span></p>
+                <CardContent className="flex-grow text-sm text-foreground space-y-2 p-5 border-b border-gray-200 dark:border-gray-700 text-center">
+                  <p><span className="break-all text-gray-800 dark:text-gray-200 md:whitespace-normal">{p.email}</span></p>
+                  <p className="flex items-center justify-center"><Badge className={`px-3 py-1 text-xs font-medium rounded-full ${getGradientColorClass(p.id!)} text-white`}>{p.status.charAt(0).toUpperCase() + p.status.slice(1).replace('_', ' ')}</Badge></p>
+                  <p><span className="break-words text-gray-800 dark:text-gray-200">{p.tanggalBergabung ? new Date(p.tanggalBergabung).toLocaleDateString('id-ID') : 'N/A'}</span></p>
                 </CardContent>
                 <div className="p-5">
                   <Button asChild className="w-full text-base font-semibold py-2 rounded-md">

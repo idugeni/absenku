@@ -11,7 +11,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useToast } from "./use-toast";
+import { useToast } from '@/components/ui/use-toast';
 import { Attendance } from "@/types";
 import { convertDatesToTimestamps } from "@/utils/firebaseDateUtils";
 import { processSnapshot } from "@/utils/firestoreListenerUtils";
@@ -47,8 +47,11 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
         setAttendanceLoading(false);
       },
       (error) => {
-        console.error(`Error fetching ${collectionName}:`, error);
-        toast({ title: "Error", description: `Gagal mengambil data ${collectionName}.`});
+        toast({
+          title: "Error",
+          description: `Error fetching ${collectionName}: ${error.message}`,
+          variant: "destructive",
+        });
         setAttendanceLoading(false);
       }
     );
@@ -77,8 +80,11 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
       toast({ title: "Berhasil", description: "Absensi dicatat." });
       return docRef.id;
     } catch (error) {
-      console.error(`Error adding ${collectionName}:`, error);
-      toast({ title: "Error", description: "Gagal mencatat absensi.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error adding attendance: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -88,8 +94,11 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
       await updateDoc(doc(db, collectionName, id), dataToUpdate);
       toast({ title: "Berhasil", description: "Absensi diperbarui." });
     } catch (error) {
-      console.error(`Error updating ${collectionName}:`, error);
-      toast({ title: "Error", description: "Gagal memperbarui absensi.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error updating attendance: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 

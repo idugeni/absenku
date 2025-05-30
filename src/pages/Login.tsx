@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { LogIn, Mail, Lock } from 'lucide-react';
 
 const Login = () => {
@@ -39,11 +39,10 @@ const Login = () => {
       });
       navigate('/');
     } catch (error: unknown) {
-      console.error('Login error:', error);
       toast({
-        title: "Login Gagal",
-        description: (error instanceof Error && error.message) ? error.message : "Terjadi kesalahan. Silakan coba lagi.",
-        variant: "destructive"
+        title: "Login Failed",
+        description: (error as Error).message || "An unknown error occurred during login.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);

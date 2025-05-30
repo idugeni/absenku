@@ -8,7 +8,7 @@ import {
     DocumentData,
   } from "firebase/firestore";
   import { db } from "@/lib/firebase"; // Sesuaikan path jika perlu
-  import { useToast } from "./use-toast"; // Sesuaikan path jika perlu
+  import { useToast } from '@/components/ui/use-toast';
   import {
     convertDatesToTimestamps,
     convertTimestampsToDates,
@@ -40,12 +40,9 @@ import {
         });
         return data;
       } catch (error: unknown) {
-        console.error(`Error exporting ${collectionName}:`, error);
         toast({
-          title: "Export Gagal",
-          description: `Gagal mengekspor ${collectionName}. ${
-            error instanceof Error ? error.message : "Error."
-          }`,
+          title: "Error",
+          description: `Error exporting ${collectionName}: ${(error as Error).message}`,
           variant: "destructive",
         });
         return [];
@@ -72,10 +69,9 @@ import {
           description: `Impor ${jsonData.length} dokumen ke ${collectionName} berhasil.`,
         });
       } catch (error) {
-        console.error(`Error importing ${collectionName}:`, error);
         toast({
-          title: "Import Gagal",
-          description: `Gagal mengimpor ke ${collectionName}. Cek konsol.`,
+          title: "Error",
+          description: `Error importing ${collectionName}: ${(error as Error).message}`,
           variant: "destructive",
         });
       }

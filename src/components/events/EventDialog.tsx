@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
-import { Event } from '@/types';
+import { Event, Pegawai } from '@/types'; // Asumsi Pegawai type ada di '@/types'
 import { useAuth } from '@/contexts/useAuth';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast'; // Menggunakan useToast yang sudah ada, diasumsikan dari 'sonner' atau shadcn/ui
 
-// --- (Definisi tipe FormDataState, EventDialogProps, getDefaultFormData tetap sama seperti sebelumnya) ---
+// --- (Definisi tipe FormDataState, EventDialogProps, getDefaultFormData) ---
 type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
 
 interface FormDataState {
@@ -29,55 +30,77 @@ interface EventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event?: Event | null;
+  onSaveSuccess?: () => void;
 }
 
-const getDefaultFormData = (): FormDataState => {
+const getDefaultFormData = (event?: Event | null): FormDataState => {
+  if (event) {
+    // Pastikan event.startDate dan event.endDate adalah instance Date atau string yang valid
+    const startDate = event.startDate instanceof Date ? event.startDate : new Date(event.startDate);
+    const endDate = event.endDate instanceof Date ? event.endDate : new Date(event.endDate);
+
+    return {
+      name: event.name,
+      description: event.description,
+      category: event.category,
+      startDate: formatToDatetimeLocal(startDate),
+      endDate: formatToDatetimeLocal(endDate),
+      location: event.location,
+      status: event.status as EventStatus,
+      assignedPegawai: event.assignedPegawai || [],
+    };
+  }
+
   const now = new Date();
   now.setMinutes(Math.ceil(now.getMinutes() / 30) * 30, 0, 0);
-  const defaultStartDate = now.toISOString().slice(0, 16);
-  const defaultEndDate = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16);
+  const defaultStartDate = formatToDatetimeLocal(now);
+  const defaultEndDate = formatToDatetimeLocal(new Date(now.getTime() + 2 * 60 * 60 * 1000));
+
   return {
-    name: '', description: '', category: '',
-    startDate: defaultStartDate, endDate: defaultEndDate,
-    location: '', status: 'upcoming', assignedPegawai: [],
+    name: '',
+    description: '',
+    category: '',
+    startDate: defaultStartDate,
+    endDate: defaultEndDate,
+    location: '',
+    status: 'upcoming',
+    assignedPegawai: [],
   };
 };
-// --- (Akhir dari bagian yang sama) ---
 
-const EventDialog = ({ open, onOpenChange, event }: EventDialogProps) => {
+// Helper function to format Date object to 'YYYY-MM-DDTHH:mm' in local time
+const formatToDatetimeLocal = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+// --- (Akhir dari definisi) ---
+
+export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventDialogProps) {
   const { addEvent, updateEvent, pegawai = [] } = useAppFirestore();
   const { currentUser } = useAuth();
-  const [formData, setFormData] = useState<FormDataState>(getDefaultFormData());
+  const [formData, setFormData] = useState<FormDataState>(() => getDefaultFormData(event));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
-      if (event) {
-        setFormData({
-          name: event.name,
-          description: event.description,
-          category: event.category,
-          startDate: event.startDate instanceof Date ? event.startDate.toISOString().slice(0, 16) : new Date(event.startDate).toISOString().slice(0, 16),
-          endDate: event.endDate instanceof Date ? event.endDate.toISOString().slice(0, 16) : new Date(event.endDate).toISOString().slice(0, 16),
-          location: event.location,
-          status: event.status as EventStatus,
-          assignedPegawai: event.assignedPegawai || [],
-        });
-      } else {
-        setFormData(getDefaultFormData());
-      }
+      setFormData(getDefaultFormData(event));
     }
   }, [event, open]);
 
-  const handleInputChange = (field: keyof FormDataState, value: string | Date | EventStatus | string[]) => {
+  const handleInputChange = useCallback((field: keyof FormDataState, value: string | Date | EventStatus | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-  
-  const handleStatusChange = (value: string) => {
-    handleInputChange('status', value as EventStatus);
-  };
+  }, []);
 
-  const handlePegawaiToggle = (pegawaiId: string, checked: boolean | 'indeterminate') => {
+  const handleStatusChange = useCallback((value: string) => {
+    handleInputChange('status', value as EventStatus);
+  }, [handleInputChange]);
+
+  const handlePegawaiToggle = useCallback((pegawaiId: string, checked: boolean | 'indeterminate') => {
     if (typeof checked === 'boolean') {
       setFormData(prev => ({
         ...prev,
@@ -86,34 +109,67 @@ const EventDialog = ({ open, onOpenChange, event }: EventDialogProps) => {
           : prev.assignedPegawai.filter(id => id !== pegawaiId),
       }));
     }
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    if (new Date(formData.startDate).getTime() > new Date(formData.endDate).getTime()) {
+      toast({
+        title: "Kesalahan Input Waktu",
+        description: "Waktu selesai tidak boleh lebih awal dari waktu mulai.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     const eventPayload = {
       ...formData,
       startDate: new Date(formData.startDate),
       endDate: new Date(formData.endDate),
       createdBy: currentUser?.uid || null,
     };
+
     try {
       if (event?.id) {
         await updateEvent(event.id, eventPayload);
+        toast({
+          title: "Berhasil!",
+          description: "Kegiatan berhasil diperbarui.",
+          variant: "success",
+        });
       } else {
         await addEvent(eventPayload);
+        toast({
+          title: "Berhasil!",
+          description: "Kegiatan baru berhasil ditambahkan.",
+          variant: "success",
+        });
       }
       onOpenChange(false);
-    } catch (error) {
-      console.error("Gagal menyimpan kegiatan:", error);
+      onSaveSuccess?.();
+    } catch (error: unknown) { // Menggunakan 'unknown' untuk error dan melakukan type assertion atau type narrowing
+      let errorMessage = "Terjadi kesalahan saat menyimpan kegiatan. Silakan coba lagi.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      toast({
+        title: "Gagal menyimpan kegiatan",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [formData, currentUser?.uid, event?.id, addEvent, updateEvent, onOpenChange, toast, onSaveSuccess]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* PERBAIKAN UTAMA PADA LAYOUT DI BAWAH INI */}
       <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
         {/* Header Dialog */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b sticky top-0 bg-background z-10">
@@ -121,7 +177,7 @@ const EventDialog = ({ open, onOpenChange, event }: EventDialogProps) => {
             {event ? 'Edit Kegiatan' : 'Buat Kegiatan Baru'}
           </DialogTitle>
         </DialogHeader>
-        
+
         {/* Form menjadi area konten utama yang bisa di-scroll */}
         <form id="eventDialogForm" onSubmit={handleSubmit} className="flex-1 space-y-5 overflow-y-auto px-6 py-4">
           {/* Nama Kegiatan */}
@@ -213,7 +269,7 @@ const EventDialog = ({ open, onOpenChange, event }: EventDialogProps) => {
           {/* Status */}
           <div className="space-y-1.5">
             <Label htmlFor="status" className="text-sm font-medium">Status</Label>
-            <Select 
+            <Select
               value={formData.status}
               onValueChange={handleStatusChange}
               disabled={isSubmitting}
@@ -240,7 +296,7 @@ const EventDialog = ({ open, onOpenChange, event }: EventDialogProps) => {
                   checked={formData.assignedPegawai.length === pegawai.length && pegawai.length > 0}
                   onCheckedChange={(checked) => {
                     if (typeof checked === 'boolean') {
-                      handleInputChange('assignedPegawai', checked ? pegawai.map(p => p.id) : []);
+                      handleInputChange('assignedPegawai', checked ? pegawai.map((p: Pegawai) => p.id) : []);
                     }
                   }}
                   disabled={isSubmitting}
@@ -249,7 +305,7 @@ const EventDialog = ({ open, onOpenChange, event }: EventDialogProps) => {
               </div>
               <div className="border rounded-lg p-3 max-h-48 overflow-y-auto bg-gray-50/50">
                 <div className="space-y-2.5">
-                  {pegawai.map((p) => (
+                  {pegawai.map((p: Pegawai) => (
                     <div key={p.id} className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-md transition-colors">
                       <Checkbox
                         id={`pegawai-${p.id}`}
@@ -270,9 +326,9 @@ const EventDialog = ({ open, onOpenChange, event }: EventDialogProps) => {
 
         {/* Footer Dialog untuk tombol aksi */}
         <DialogFooter className="px-6 py-4 border-t bg-background flex-shrink-0">
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
@@ -289,6 +345,6 @@ const EventDialog = ({ open, onOpenChange, event }: EventDialogProps) => {
       </DialogContent>
     </Dialog>
   );
-};
+}
 
 export default EventDialog;

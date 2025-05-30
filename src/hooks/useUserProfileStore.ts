@@ -1,7 +1,7 @@
 // src/hooks/useUserProfileStore.ts
 import { doc, updateDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useToast } from "./use-toast";
+import { useToast } from '@/components/ui/use-toast';
 import { UserProfile } from "@/types";
 import { convertDatesToTimestamps } from "@/utils/firebaseDateUtils";
 
@@ -30,8 +30,11 @@ export const useUserProfileStore = (): UseUserProfileStoreReturn => {
       await updateDoc(userDocRef, dataToUpdate);
       toast({ title: "Berhasil", description: "Profil pengguna diperbarui." });
     } catch (error) {
-      console.error("Error updating user profile:", error);
-      toast({ title: "Error", description: "Gagal memperbarui profil.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error updating user profile: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 

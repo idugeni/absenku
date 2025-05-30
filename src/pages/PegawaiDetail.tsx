@@ -10,6 +10,26 @@ import { useAppFirestore } from '@/hooks/useAppFirestore';
 import { useToast } from '@/hooks/use-toast';
 
 
+const getGradientColorClass = (id: string) => {
+  const colors = [
+    'from-blue-400 to-blue-600',
+    'from-green-400 to-green-600',
+    'from-purple-400 to-purple-600',
+    'from-pink-400 to-pink-600',
+    'from-indigo-400 to-indigo-600',
+    'from-yellow-400 to-yellow-600',
+    'from-red-400 to-red-600',
+    'from-teal-400 to-teal-600',
+    'from-orange-400 to-orange-600',
+  ];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash % colors.length);
+  return `bg-gradient-to-r ${colors[index]}`;
+};
+
 const PegawaiDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -39,10 +59,7 @@ const PegawaiDetail = () => {
       
       setQrCodeUrl(qrUrl);
       
-      toast({
-        title: "QR Code Generated",
-        description: "QR Code pegawai berhasil dibuat"
-      });
+
     } catch (error) {
       toast({
         title: "Error",
@@ -94,7 +111,7 @@ const PegawaiDetail = () => {
       case 'aktif':
         return <Badge className="bg-green-100 text-green-800 border-green-200">Aktif</Badge>;
       case 'pensiun':
-        return <Badge className="bg-red-100 text-red-800 border-red-200">Non-aktif</Badge>;
+        return <Badge className="bg-red-100 text-red-800 border-red-200">Pensiun</Badge>;
       case 'cuti':
         return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Cuti</Badge>;
       default:
@@ -155,6 +172,10 @@ const PegawaiDetail = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Detail Pegawai</h1>
               <p className="text-gray-600">Informasi lengkap pegawai dan riwayat kehadiran</p>
             </div>
+            <Button onClick={() => navigate(`/pegawai/edit/${currentPegawai.id}`)} variant="outline">
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Pegawai
+            </Button>
           </div>
         </div>
 
@@ -164,28 +185,39 @@ const PegawaiDetail = () => {
             <Card>
               <CardHeader className="text-center">
                 <Avatar className="w-24 h-24 mx-auto mb-4">
-                  <AvatarFallback className="bg-blue-600 text-white text-2xl">
+                  <AvatarFallback className={`text-white text-2xl ${getGradientColorClass(currentPegawai.id!)}`}>
                     {currentPegawai.nama.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <CardTitle className="text-xl">{currentPegawai.nama}</CardTitle>
-                <p className="text-gray-600">{currentPegawai.jabatan}</p>
-                {getStatusBadge(currentPegawai.status)}
+                <Badge className={`px-3 py-1 text-xs font-medium rounded-full ${getGradientColorClass(currentPegawai.id!)} text-white mx-auto`}>{currentPegawai.jabatan}</Badge>
+                <Badge className={`mt-2 px-3 py-1 text-xs font-medium rounded-full ${getGradientColorClass(currentPegawai.id!)} text-white mx-auto`}>{currentPegawai.nip}</Badge>
               </CardHeader>
               
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">NIP</label>
-                    <p className="text-sm">{currentPegawai.nip}</p>
+              <CardContent className="flex-grow text-sm text-foreground p-5">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center">
+                    <div className="w-24 font-semibold text-gray-700 dark:text-gray-300">Email</div>
+                    <div className="text-gray-700 dark:text-gray-300">:</div>
+                    <div className="ml-2 break-all text-gray-800 dark:text-gray-200 md:whitespace-normal">{currentPegawai.email}</div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-sm">{currentPegawai.email}</p>
+
+                  <div className="flex items-center">
+                    <div className="w-24 font-semibold text-gray-700 dark:text-gray-300">Status</div>
+                    <div className="text-gray-700 dark:text-gray-300">:</div>
+                    <div className="ml-2">
+                      <Badge className={`px-3 py-1 text-xs font-medium rounded-full ${getGradientColorClass(currentPegawai.id!)} text-white`}>
+                        {currentPegawai.status.charAt(0).toUpperCase() + currentPegawai.status.slice(1).replace('_', ' ')}
+                      </Badge>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Tanggal Bergabung</label>
-                    <p className="text-sm">{currentPegawai.tanggalBergabung.toLocaleDateString('id-ID')}</p>
+
+                  <div className="flex items-center">
+                    <div className="w-24 font-semibold text-gray-700 dark:text-gray-300">Bergabung</div>
+                    <div className="text-gray-700 dark:text-gray-300">:</div>
+                    <div className="ml-2 break-words text-gray-800 dark:text-gray-200">
+                      {currentPegawai.tanggalBergabung ? new Date(currentPegawai.tanggalBergabung).toLocaleDateString('id-ID') : 'N/A'}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -193,19 +225,19 @@ const PegawaiDetail = () => {
 
             {/* QR Code Card */}
             <Card className="mt-6 w-full max-w-md mx-auto shadow-lg rounded-xl">
-  <CardHeader className="pb-4">
+  <CardHeader>
     <CardTitle className="text-xl flex items-center font-semibold text-gray-700">
       <QrCode className="h-6 w-6 mr-3 text-indigo-600" />
       QR Code Pegawai
     </CardTitle>
   </CardHeader>
-  <CardContent className="text-center space-y-6 p-6">
+  <CardContent className="text-center space-y-2 p-2">
     {qrCodeUrl ? (
       <>
         <div className="p-3 bg-white border border-gray-200 rounded-lg inline-block shadow-md transition-all duration-300 ease-in-out hover:shadow-xl">
           <img src={qrCodeUrl} alt="QR Code Pegawai" className="w-56 h-56 md:w-64 md:h-64 object-contain" />
         </div>
-        <div className="flex flex-col gap-3 pt-2">
+        <div className="flex flex-col gap-3 pt-4">
           <Button onClick={downloadQRCode} className="w-full py-2.5 text-base">
             <Download className="h-5 w-5 mr-2" />
             Download

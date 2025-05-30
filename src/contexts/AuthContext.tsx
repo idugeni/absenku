@@ -9,12 +9,14 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { AuthContext, AuthContextType, UserProfile } from './AuthContextDefinition';
+import { AuthContext, AuthContextType, UserProfile } from '@/contexts/AuthContextDefinition';
+import { useToast } from '@/components/ui/use-toast';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   const login = async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email, password);
@@ -40,25 +42,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      console.log('Attempting to log out...');
       await signOut(auth);
-      console.log('Logout successful.');
+      toast({
+        title: "Success",
+        description: "Logout successful.",
+      });
     } catch (error) {
-      console.error('Logout failed:', error);
+      toast({
+        title: "Error",
+        description: `Error during logout: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
-      console.log('Auth state changed. User:', user ? user.uid : 'null');
       
       if (user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           setUserProfile(userDoc.data() as UserProfile);
         } else {
-          console.warn('User document not found for UID:', user.uid);
+          setUserProfile(null);
         }
       } else {
         setUserProfile(null);
@@ -68,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return unsubscribe;
-  }, []);
+  }, [toast]);
 
   const value: AuthContextType = {
     currentUser,

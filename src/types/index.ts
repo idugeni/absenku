@@ -26,6 +26,16 @@ export interface Pegawai {
   photoUrl?: string;
 }
 
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  phoneNumber?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Attendance {
   id?: string;
   eventId: string;
@@ -34,4 +44,6 @@ export interface Attendance {
   checkInTime?: Date;
   checkOutTime?: Date;
   createdAt: Date;
+  location?: string;
+  notes?: string;
 }

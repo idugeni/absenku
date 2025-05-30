@@ -2,17 +2,17 @@
 import {
     useFirestoreBackup,
     UseFirestoreBackupReturn,
-  } from "./useFirestoreBackup";
-  import { usePegawaiStore, UsePegawaiStoreReturn, Pegawai } from "./usePegawaiStore";
-  import { useEventStore, UseEventStoreReturn } from "./useEventStore";
+  } from "@/hooks/useFirestoreBackup";
+  import { usePegawaiStore, UsePegawaiStoreReturn, Pegawai } from "@/hooks/usePegawaiStore";
+  import { useEventStore, UseEventStoreReturn } from "@/hooks/useEventStore";
   import {
     useAttendanceStore,
     UseAttendanceStoreReturn,
-  } from "./useAttendanceStore";
+  } from "@/hooks/useAttendanceStore";
   import {
     useUserProfileStore,
     UseUserProfileStoreReturn,
-  } from "./useUserProfileStore";
+  } from "@/hooks/useUserProfileStore";
   
   // Gabungkan semua tipe return dari hook individual
   export interface AppFirestoreReturn

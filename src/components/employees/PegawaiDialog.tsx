@@ -22,9 +22,10 @@ interface PegawaiDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pegawai?: Pegawai | null;
+  onSaveSuccess?: () => void; // Add this line
 }
 
-const PegawaiDialog = ({ open, onOpenChange, pegawai }: PegawaiDialogProps) => {
+const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDialogProps) => {
   const { addPegawai, updatePegawai } = useAppFirestore();
   const [formData, setFormData] = useState<PegawaiFormState>({
     nama: '',
@@ -75,6 +76,9 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai }: PegawaiDialogProps) => {
     }
     
     onOpenChange(false);
+    if (onSaveSuccess) {
+      onSaveSuccess();
+    }
   };
 
   return (

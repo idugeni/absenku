@@ -6,10 +6,9 @@ interface PegawaiQRCodeData {
   nama: string;
 }
 
-export const generatePegawaiQRCode = async (data: PegawaiQRCodeData): Promise<string | undefined> => {
+export const generatePegawaiQRCode = async (data: PegawaiQRCodeData): Promise<string> => {
   try {
     const qrValue = JSON.stringify(data);
-    // Render the QR code component to a string (SVG)
     const svgString = await QRCode.toString(qrValue, {
       type: 'svg',
       errorCorrectionLevel: 'H',
@@ -17,11 +16,9 @@ export const generatePegawaiQRCode = async (data: PegawaiQRCodeData): Promise<st
       margin: 0
     });
 
-    // Encode the SVG string to a data URL
     const dataUrl = `data:image/svg+xml;base64,${btoa(svgString)}`;
     return dataUrl;
   } catch (error) {
-    console.error("Error generating QR code:", error);
-    return undefined;
+    throw new Error(`Error generating QR code: ${(error as Error).message}`);
   }
 };

@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar'; // Komponen Kalender
 import { format } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale'; // Locale Indonesia untuk format tanggal
+import { ArrowLeft } from 'lucide-react'; // Import icon ArrowLeft
 
 // Interface Pegawai (asumsi sudah ada dan benar)
 interface Pegawai {
@@ -41,6 +42,10 @@ const PegawaiNew = () => {
   const { addPegawai } = useAppFirestore();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleGoBack = () => {
+    navigate('/pegawai');
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -101,11 +106,10 @@ const PegawaiNew = () => {
       });
       navigate('/pegawai');
     } catch (error) {
-      console.error('Error adding pegawai:', error);
       toast({
-        title: 'Gagal!',
-        description: 'Terjadi kesalahan saat menambahkan data pegawai.',
-        variant: 'destructive',
+        title: "Error",
+        description: `Error adding pegawai: ${error.message}`,
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -113,7 +117,12 @@ const PegawaiNew = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8"> {/* Container dengan padding responsif */}
+    <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
+      <div className="mb-4">
+        <Button variant="outline" onClick={handleGoBack} className="flex items-center">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Kembali ke Daftar Pegawai
+        </Button>
+      </div>
       <Card className="max-w-2xl mx-auto shadow-lg py-0"> {/* Tambahkan shadow untuk efek kedalaman */}
         <CardHeader className="bg-gray-50 dark:bg-gray-800 p-6 rounded-t-lg"> {/* Warna latar header */}
           <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100">

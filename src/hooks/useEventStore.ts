@@ -12,7 +12,7 @@ import {
   Timestamp
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useToast } from "./use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Event } from "@/types";
 import { convertDatesToTimestamps } from "@/utils/firebaseDateUtils";
 import { processSnapshot } from "@/utils/firestoreListenerUtils";
@@ -48,8 +48,11 @@ export const useEventStore = (): UseEventStoreReturn => {
       await updateDoc(doc(db, collectionName, id), dataToUpdate);
       toast({ title: "Berhasil", description: "Event diperbarui." });
     } catch (error) {
-      console.error(`Error updating ${collectionName}:`, error);
-      toast({ title: "Error", description: "Gagal memperbarui event.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error updating ${collectionName}: ${error.message}`,
+        variant: "destructive",
+      });
     }
   }, [toast, collectionName]);
 
@@ -75,8 +78,11 @@ export const useEventStore = (): UseEventStoreReturn => {
         setEventsLoading(false);
       },
       (error) => {
-        console.error(`Error fetching ${collectionName}:`, error);
-        toast({ title: "Error", description: `Gagal mengambil data ${collectionName}.`});
+        toast({
+          title: "Error",
+          description: `Error fetching ${collectionName}: ${error.message}`,
+          variant: "destructive",
+        });
         setEventsLoading(false);
       }
     );
@@ -101,8 +107,11 @@ export const useEventStore = (): UseEventStoreReturn => {
       toast({ title: "Berhasil", description: "Event ditambahkan." });
       return docRef.id;
     } catch (error) {
-      console.error(`Error adding ${collectionName}:`, error);
-      toast({ title: "Error", description: "Gagal menambahkan event.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error adding ${collectionName}: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -111,8 +120,11 @@ export const useEventStore = (): UseEventStoreReturn => {
       await deleteDoc(doc(db, collectionName, id));
       toast({ title: "Berhasil", description: "Event dihapus." });
     } catch (error) {
-      console.error(`Error deleting ${collectionName}:`, error);
-      toast({ title: "Error", description: "Gagal menghapus event.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error deleting ${collectionName}: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 

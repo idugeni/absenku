@@ -13,7 +13,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useToast } from "./use-toast";
+import { useToast } from '@/components/ui/use-toast';
 import { Pegawai } from "@/types";
 import { convertDatesToTimestamps } from "@/utils/firebaseDateUtils";
 import { generatePegawaiQRCode } from "@/utils/qrcodeUtils";
@@ -54,7 +54,11 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
       },
       (error) => {
         console.error(`Error fetching ${collectionName}:`, error);
-        toast({ title: "Error", description: `Gagal mengambil data ${collectionName}.`});
+        toast({
+          title: "Error",
+          description: `Error fetching ${collectionName}: ${error.message}`,
+          variant: "destructive",
+        });
         setPegawaiLoading(false);
       }
     );
@@ -94,7 +98,11 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
       return docRef.id;
     } catch (error) {
       console.error(`Error adding ${collectionName}:`, error);
-      toast({ title: "Error", description: "Gagal menambahkan pegawai.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error adding ${collectionName}: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -111,7 +119,11 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
       toast({ title: "Berhasil", description: "Pegawai diperbarui." });
     } catch (error) {
       console.error(`Error updating ${collectionName}:`, error);
-      toast({ title: "Error", description: "Gagal memperbarui pegawai.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error updating ${collectionName}: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -121,7 +133,11 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
       toast({ title: "Berhasil", description: "Pegawai dihapus." });
     } catch (error) {
       console.error(`Error deleting ${collectionName}:`, error);
-      toast({ title: "Error", description: "Gagal menghapus pegawai.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: `Error deleting ${collectionName}: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 
