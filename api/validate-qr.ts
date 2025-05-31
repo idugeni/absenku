@@ -9,7 +9,9 @@ export const validateQr = functions.https.onRequest(async (req, res) => {
     return;
   }
 
-  const { eventId, token, nip } = req.body;
+  const eventId = req.query.eventId as string;
+  const token = req.query.token as string;
+  const nip = req.query.nip as string;
 
   if (!eventId || !token || !nip) {
     res.status(400).send("Missing parameters");
