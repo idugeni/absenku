@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
+import { Bell, Mail, Smartphone, MessageSquare, Save } from 'lucide-react'; // Import additional icons
 
 interface NotificationSettingsProps {
   loading: boolean;
@@ -17,24 +18,33 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ loading, se
   const { updateUserProfile } = useAppFirestore();
 
   const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    pushNotifications: false,
-    attendanceReminders: true,
-    eventUpdates: true
+    email: true,
+    push: false,
+    sms: false,
   });
 
   const handleSaveNotifications = async () => {
     setLoading(true);
     try {
-      await updateUserProfile(currentUser.uid, { notifications });
-      toast({
-        title: "Berhasil",
-        description: "Pengaturan notifikasi berhasil disimpan"
-      });
+      if (currentUser?.uid) {
+        await updateUserProfile(currentUser.uid, { notifications });
+        toast({
+          title: "Berhasil",
+          description: "Pengaturan notifikasi berhasil disimpan.",
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Pengguna tidak terautentikasi.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
+      console.error("Gagal menyimpan pengaturan notifikasi:", error);
       toast({
         title: "Error",
-        description: "Gagal menyimpan pengaturan notifikasi",
+        description: "Gagal menyimpan pengaturan notifikasi. Silakan coba lagi.",
         variant: "destructive"
       });
     } finally {
@@ -43,72 +53,85 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ loading, se
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Pengaturan Notifikasi</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium">Notifikasi Email</h4>
-              <p className="text-sm text-gray-600">Terima notifikasi melalui email</p>
+    <div className="max-w-3xl mx-auto py-8 px-4">
+      <Card className="shadow-lg border-2 border-gray-100 dark:border-gray-800">
+        <CardHeader className="border-b pb-4">
+          <CardTitle className="flex items-center text-2xl font-bold text-gray-800 dark:text-gray-100">
+            <Bell className="h-7 w-7 mr-3 text-purple-600 dark:text-purple-400" /> {/* Icon added */}
+            Pengaturan Notifikasi
+          </CardTitle>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Sesuaikan bagaimana Anda ingin menerima pembaruan dan informasi dari aplikasi.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-8 p-6"> {/* Increased vertical spacing and padding */}
+          
+          {/* Email Notifications */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <Mail className="h-5 w-5 mr-3 text-blue-500" />
+              <div>
+                <h4 className="font-medium text-gray-800 dark:text-gray-100">Notifikasi Email</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Terima pembaruan penting, ringkasan aktivitas, dan pengumuman ke kotak masuk email Anda.
+                </p>
+              </div>
             </div>
             <Switch
-              checked={notifications.emailNotifications}
+              checked={notifications.email}
               onCheckedChange={(checked) => 
-                setNotifications(prev => ({ ...prev, emailNotifications: checked }))
+                setNotifications(prev => ({ ...prev, email: checked }))
               }
             />
           </div>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium">Notifikasi Push</h4>
-              <p className="text-sm text-gray-600">Terima notifikasi push di browser</p>
+          {/* Push Notifications */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <Smartphone className="h-5 w-5 mr-3 text-green-500" />
+              <div>
+                <h4 className="font-medium text-gray-800 dark:text-gray-100">Notifikasi Push</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Dapatkan notifikasi instan langsung di perangkat Anda saat aplikasi tidak dibuka (memerlukan izin browser).
+                </p>
+              </div>
             </div>
             <Switch
-              checked={notifications.pushNotifications}
+              checked={notifications.push}
               onCheckedChange={(checked) => 
-                setNotifications(prev => ({ ...prev, pushNotifications: checked }))
+                setNotifications(prev => ({ ...prev, push: checked }))
               }
             />
           </div>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium">Pengingat Kehadiran</h4>
-              <p className="text-sm text-gray-600">Pengingat otomatis untuk kegiatan</p>
+          {/* SMS Notifications */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              <MessageSquare className="h-5 w-5 mr-3 text-orange-500" />
+              <div>
+                <h4 className="font-medium text-gray-800 dark:text-gray-100">Notifikasi SMS</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Terima pemberitahuan singkat dan penting langsung ke nomor telepon Anda (biaya SMS mungkin berlaku).
+                </p>
+              </div>
             </div>
             <Switch
-              checked={notifications.attendanceReminders}
+              checked={notifications.sms}
               onCheckedChange={(checked) => 
-                setNotifications(prev => ({ ...prev, attendanceReminders: checked }))
+                setNotifications(prev => ({ ...prev, sms: checked }))
               }
             />
           </div>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium">Update Kegiatan</h4>
-              <p className="text-sm text-gray-600">Notifikasi perubahan kegiatan</p>
-            </div>
-            <Switch
-              checked={notifications.eventUpdates}
-              onCheckedChange={(checked) => 
-                setNotifications(prev => ({ ...prev, eventUpdates: checked }))
-              }
-            />
+          <div className="flex justify-end w-full pt-4">
+            <Button onClick={handleSaveNotifications} disabled={loading} className="w-full md:w-auto px-6 py-2.5 text-base font-semibold">
+              <Save className="h-5 w-5 mr-2" />
+              {loading ? "Menyimpan..." : "Simpan Pengaturan"}
+            </Button>
           </div>
-        </div>
-        
-        <div className="flex justify-end">
-          <Button onClick={handleSaveNotifications} disabled={loading}>
-            Simpan Pengaturan
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

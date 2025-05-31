@@ -13,13 +13,28 @@ export interface AuthContextType {
 export interface UserProfile {
   uid: string;
   email: string;
-  name: string;
-  role: 'super_admin' | 'admin' | 'manager' | 'employee';
+  displayName?: string;
+  name?: string; // Add name as an alias for displayName
+  photoURL?: string;
+  phoneNumber?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  notifications?: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  systemSettings?: {
+    timezone: string;
+    dateFormat: string;
+    language: string;
+    autoBackup: boolean;
+    maxAttendanceTime: string;
+  };
+  role?: 'super_admin' | 'admin' | 'manager' | 'employee';
   department?: string;
   position?: string;
   employeeId?: string;
-  phone?: string;
-  createdAt: Date;
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);

@@ -216,70 +216,88 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="text-lg">Filter Laporan</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label htmlFor="dateRangeSelect" className="text-sm font-medium">Periode</label>
-                <Select value={dateRange} onValueChange={setDateRange}>
-                  <SelectTrigger id="dateRangeSelect">
-                    <SelectValue placeholder="Pilih periode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* <SelectItem value="all_time">Semua Waktu</SelectItem> */}
-                    <SelectItem value="this_week">Minggu Ini</SelectItem>
-                    <SelectItem value="this_month">Bulan Ini</SelectItem>
-                    <SelectItem value="last_month">Bulan Lalu</SelectItem>
-                    <SelectItem value="this_year">Tahun Ini</SelectItem>
-                    {/* Tambahkan opsi custom range jika diperlukan */}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="eventFilterSelect" className="text-sm font-medium">Kegiatan</label>
-                <Select value={eventFilter} onValueChange={setEventFilter}>
-                  <SelectTrigger id="eventFilterSelect">
-                    <SelectValue placeholder="Pilih kegiatan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Kegiatan</SelectItem>
-                    {events.map(event => (
-                      <SelectItem key={event.id} value={event.id!}> {/* Asumsi event.id selalu ada */}
-                        {event.name || 'Kegiatan Tanpa Nama'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="statusFilterSelect" className="text-sm font-medium">Status</label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger id="statusFilterSelect">
-                    <SelectValue placeholder="Pilih status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value={ATTENDANCE_STATUS.PRESENT}>Hadir</SelectItem>
-                    <SelectItem value={ATTENDANCE_STATUS.LATE}>Terlambat</SelectItem>
-                    <SelectItem value={ATTENDANCE_STATUS.ABSENT}>Tidak Hadir</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="flex justify-end mt-6"> {/* Memberi sedikit jarak lebih */}
-              <Button onClick={handleExportReport} className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Download className="h-4 w-4 mr-2" />
-                Export Laporan
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <Card className="lg:col-span-2 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden"> {/* Menambah shadow dan rounded-xl untuk estetika */}
+      <CardHeader className="p-6 border-b border-gray-200 dark:border-gray-700"> {/* Border bawah untuk pemisah visual */}
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100"> {/* Ukuran font lebih besar, bold */}
+          Filter Laporan Analisis
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="grid gap-6 md:grid-cols-3"> {/* Gap antar kolom sedikit diperbesar */}
+          {/* Filter Periode */}
+          <div className="space-y-2">
+            <label htmlFor="dateRangeSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Periode Laporan
+            </label>
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger id="dateRangeSelect" className="w-full"> {/* Pastikan trigger mengisi lebar penuh */}
+                <SelectValue placeholder="Pilih rentang periode" /> {/* Placeholder yang lebih deskriptif */}
+              </SelectTrigger>
+              <SelectContent>
+                {/* Opsi yang relevan untuk periode */}
+                <SelectItem value="this_week">Minggu Ini</SelectItem>
+                <SelectItem value="this_month">Bulan Ini</SelectItem>
+                <SelectItem value="last_month">Bulan Lalu</SelectItem>
+                <SelectItem value="this_year">Tahun Ini</SelectItem>
+                <SelectItem value="last_year">Tahun Lalu</SelectItem> {/* Menambah opsi tahun lalu */}
+                {/* Anda dapat menambahkan opsi 'Custom Range' di sini jika ingin integrasi date picker */}
+                {/* <SelectItem value="custom">Rentang Kustom...</SelectItem> */}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filter Kegiatan */}
+          <div className="space-y-2">
+            <label htmlFor="eventFilterSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Jenis Kegiatan
+            </label>
+            <Select value={eventFilter} onValueChange={setEventFilter}>
+              <SelectTrigger id="eventFilterSelect" className="w-full">
+                <SelectValue placeholder="Pilih jenis kegiatan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kegiatan</SelectItem>
+                {/* Pastikan `events` adalah array yang valid dan `event.id` unik */}
+                {events && events.map(event => (
+                  <SelectItem key={event.id} value={event.id!}>
+                    {event.name || 'Kegiatan Tanpa Nama'} {/* Fallback jika nama tidak ada */}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filter Status Kehadiran */}
+          <div className="space-y-2">
+            <label htmlFor="statusFilterSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Status Kehadiran
+            </label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger id="statusFilterSelect" className="w-full">
+                <SelectValue placeholder="Pilih status kehadiran" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value={ATTENDANCE_STATUS.PRESENT}>Hadir</SelectItem>
+                <SelectItem value={ATTENDANCE_STATUS.LATE}>Terlambat</SelectItem>
+                <SelectItem value={ATTENDANCE_STATUS.ABSENT}>Tidak Hadir</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Tombol Export */}
+        <div className="flex justify-end mt-8"> {/* Jarak lebih ke atas untuk tombol */}
+          <Button
+            onClick={handleExportReport}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-md transition-colors duration-200 ease-in-out"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export Laporan
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
       </div>
 
       {/* Detailed Attendance Table */}

@@ -22,3 +22,30 @@ export const generatePegawaiQRCode = async (data: PegawaiQRCodeData): Promise<st
     throw new Error(`Error generating QR code: ${(error as Error).message}`);
   }
 };
+
+interface EventQRCodeData {
+  eventId: string;
+  token: string;
+}
+
+export const generateEventQRCode = async (data: EventQRCodeData): Promise<string> => {
+  try {
+    const baseUrl = "https://quickchart.io/qr";
+    const targetUrl = `${window.location.origin}/api/validate-qr?eventId=${data.eventId}&token=${data.token}`;
+    const qrCodeUrl = `${baseUrl}?text=${encodeURIComponent(targetUrl)}&size=256&margin=0`;
+
+    const response = await fetch(qrCodeUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch QR code from QuickChart: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    throw new Error(`Error generating event QR code: ${(error as Error).message}`);
+  }
+};

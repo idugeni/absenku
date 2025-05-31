@@ -29,12 +29,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const userProfile: UserProfile = {
       uid: user.uid,
       email: user.email!,
-      name: profile.name || '',
+      displayName: profile.displayName || profile.name || '',
       role: profile.role || 'employee',
       department: profile.department,
       position: profile.position,
       employeeId: profile.employeeId,
-      createdAt: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     await setDoc(doc(db, 'users', user.uid), userProfile);

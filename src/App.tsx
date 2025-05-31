@@ -6,18 +6,18 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContextType } from '@/contexts/AuthContextDefinition';
 
-const AuthStatusChecker: React.FC = () => {
-  const { currentUser, loading } = useAuth() as AuthContextType;
-  const navigate = useNavigate();
+// const AuthStatusChecker: React.FC = () => {
+//   const { currentUser, loading } = useAuth() as AuthContextType;
+//   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!loading && !currentUser) {
-      navigate('/login');
-    }
-  }, [currentUser, loading, navigate]);
+//   useEffect(() => {
+//     if (!loading && !currentUser) {
+//       navigate('/login');
+//     }
+//   }, [currentUser, loading, navigate]);
 
-  return null;
-};
+//   return null;
+// };
 
 import { Toaster } from '@/components/ui/toaster';
 import ProtectedRoute from '@/components/auth/ProtectedRoute'; // Import ProtectedRoute
@@ -27,103 +27,33 @@ import Index from '@/pages/Index';
 import Reports from '@/pages/Reports';
 import Settings from '@/pages/Settings';
 import PegawaiDetail from '@/pages/PegawaiDetail';
-import PegawaiNew from '@/pages/PegawaiNew';
-import PegawaiEdit from '@/pages/PegawaiEdit';
+import PegawaiNew from './pages/PegawaiNew';
+import PegawaiEdit from './pages/PegawaiEdit';
+import ValidateQR from './pages/ValidateQR';
 import NotFound from '@/pages/NotFound';
 import PegawaiPage from '@/pages/Pegawai';
-// import EventList from '@/components/events/EventList'; // Hapus baris ini
 import Events from '@/pages/Events';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <AuthStatusChecker />
+        {/* <AuthStatusChecker /> */}
         <div className="min-h-screen bg-gray-50">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/validate-qr/:eventId/:token" element={<ValidateQR />} />
             {/* Protected Routes */}
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Index />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/reports"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Reports />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Settings />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pegawai"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <PegawaiPage />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pegawai/new"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <PegawaiNew />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pegawai/edit/:id"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <PegawaiEdit />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pegawai/:id"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <PegawaiDetail />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/events"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Events />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
+            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+              <Route path="/" element={<Index />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/pegawai" element={<PegawaiPage />} />
+              <Route path="/pegawai/new" element={<PegawaiNew />} />
+              <Route path="/pegawai/edit/:id" element={<PegawaiEdit />} />
+              <Route path="/pegawai/:id" element={<PegawaiDetail />} />
+              <Route path="/events" element={<Events />} />
+            </Route>
             {/* End Protected Routes */}
             <Route path="*" element={<NotFound />} />
           </Routes>

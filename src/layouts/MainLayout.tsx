@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -10,11 +10,11 @@ import { AppLogo } from '@/components/branding/AppLogo';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { NavLinkItem } from '@/components/navigation/NavLinkItem';
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
+// interface MainLayoutProps {
+//   // children: React.ReactNode; // Remove this line
+// }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = React.useState(
     localStorage.getItem('sidebarCollapsed') === 'true'
   );
@@ -95,7 +95,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             closeMobileNav={closeMobileNav}
           />
           <main className="flex-1 p-4 md:p-8">
-            {children}
+            <Outlet />
           </main>
           <Footer />
         </div>

@@ -4,7 +4,8 @@ import { EventDialog } from '@/components/events/EventDialog';
 import { Event } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, PlusCircle, Calendar, MapPin, Edit, Trash2, Clock, Info } from 'lucide-react';
+import { QrCode, PlusCircle, Calendar, MapPin, Edit, Trash2, Clock, Info } from 'lucide-react';
+import QRCodeGenerator from '@/components/qr/QRCodeGenerator'; // Import QRCodeGenerator
 import {
   Card,
   CardContent,
@@ -32,6 +33,7 @@ const Events = () => {
   const { events, deleteEvent, eventsLoading } = useEventStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isQrCodeDialogOpen, setIsQrCodeDialogOpen] = useState(false); // State for QR Code dialog
   const { toast } = useToast();
 
   const handleAddEvent = useCallback(() => {
@@ -42,6 +44,11 @@ const Events = () => {
   const handleEditEvent = useCallback((event: Event) => {
     setSelectedEvent(event);
     setIsDialogOpen(true);
+  }, []);
+
+  const handleShowQrCode = useCallback((event: Event) => { // New handler for QR Code
+    setSelectedEvent(event);
+    setIsQrCodeDialogOpen(true);
   }, []);
 
   const handleDeleteEvent = useCallback(async (eventId: string) => {
@@ -101,14 +108,14 @@ const Events = () => {
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 pb-2">
           <div>
-            <CardTitle className="text-3xl font-bold">Pengelolaan Kegiatan</CardTitle>
-            <CardDescription className="text-base text-gray-500">
+            <CardTitle className="text-2xl sm:text-3xl font-bold">Pengelolaan Kegiatan</CardTitle>
+            <CardDescription className="text-sm sm:text-base text-gray-500">
               Kelola semua kegiatan atau acara yang terdaftar di sini.
             </CardDescription>
           </div>
-          <Button onClick={handleAddEvent} className="h-10 px-4 py-2">
+          <Button onClick={handleAddEvent} className="w-full sm:w-auto h-10 px-4 py-2">
             <PlusCircle className="mr-2 h-4 w-4" /> Tambah Kegiatan Baru
           </Button>
         </CardHeader>
@@ -140,24 +147,26 @@ const Events = () => {
                   {/* Separator antara CardHeader dan CardContent */}
                   <div className="border-t border-gray-200 mx-6"></div>
 
-                  <CardContent className="flex-grow space-y-2 py-4 text-sm text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                      <span>
-                        {format(new Date(event.startDate), 'dd MMM yyyy', { locale: id })}
-                      </span>
+                  <CardContent className="flex-grow py-4 text-sm text-gray-700">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                        <span>
+                          {format(new Date(event.startDate), 'dd MMM yyyy', { locale: id })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                        <span>
+                          {format(new Date(event.startDate), 'HH:mm', { locale: id })} - {format(new Date(event.endDate), 'HH:mm', { locale: id })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                        <span>{event.location}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                      <span>
-                        {format(new Date(event.startDate), 'HH:mm', { locale: id })} - {format(new Date(event.endDate), 'HH:mm', { locale: id })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                      <span>{event.location}</span>
-                    </div>
-                    <div className="pt-2">
+                    <div className="flex justify-center mt-4">
                       <Badge
                         className={`
                           ${event.status === 'upcoming' && 'bg-blue-100 text-blue-800 hover:bg-blue-200'}
@@ -178,19 +187,31 @@ const Events = () => {
                   {/* Separator antara CardContent dan CardFooter */}
                   <div className="border-t border-gray-200 mx-6"></div>
 
-                  <CardFooter className="flex justify-end gap-2 pt-4">
+                  <CardFooter className="flex flex-col sm:flex-row w-full gap-4 pt-4 sm:justify-center">
                     <Button
                       variant="outline"
-                      size="icon"
                       onClick={() => handleEditEvent(event)}
-                      title="Edit Kegiatan"
+                      className="flex items-center gap-2 w-full sm:w-auto"
                     >
                       <Edit className="h-4 w-4" />
+                      Edit Kegiatan
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleShowQrCode(event)} // QR Code button
+                      className="flex items-center gap-2 w-full sm:w-auto"
+                    >
+                      <QrCode className="h-4 w-4" />
+                      Tampilkan QR
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="icon" title="Hapus Kegiatan">
+                        <Button 
+                          variant="destructive"
+                          className="flex items-center gap-2 w-full sm:w-auto"
+                        >
                           <Trash2 className="h-4 w-4" />
+                          Hapus Kegiatan
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -221,8 +242,16 @@ const Events = () => {
         open={isDialogOpen}
         onOpenChange={handleDialogClose}
         event={selectedEvent}
-        onSaveSuccess={handleDialogClose}
       />
+
+      {/* QR Code Generator Dialog */}
+      {selectedEvent && (
+        <QRCodeGenerator
+          open={isQrCodeDialogOpen}
+          onOpenChange={setIsQrCodeDialogOpen}
+          eventData={selectedEvent}
+        />
+      )}
     </div>
   );
 };

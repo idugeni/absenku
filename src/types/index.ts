@@ -13,6 +13,8 @@ export interface Event {
   updatedAt: Date;
   qrCode: string;
   qrCodeValue?: string;
+  qrCodeValidUntil?: Date;
+  qrCodeToken?: string;
 }
 
 export interface Pegawai {
@@ -21,6 +23,8 @@ export interface Pegawai {
   nip: string;
   jabatan: string;
   email: string;
+  position?: string;
+  phoneNumber?: string;
   status: 'aktif' | 'pensiun' | 'cuti';
   tanggalBergabung: Date;
   photoUrl?: string;
@@ -29,11 +33,24 @@ export interface Pegawai {
 export interface UserProfile {
   uid: string;
   email: string;
+  position?: string;
+  phoneNumber?: string;
   displayName?: string;
   photoURL?: string;
-  phoneNumber?: string;
   createdAt: Date;
   updatedAt: Date;
+  notifications?: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  systemSettings?: {
+    timezone: string;
+    dateFormat: string;
+    language: string;
+    autoBackup: boolean;
+    maxAttendanceTime: string;
+  };
 }
 
 export interface Attendance {

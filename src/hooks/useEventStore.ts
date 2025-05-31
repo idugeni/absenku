@@ -16,6 +16,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Event } from "@/types";
 import { convertDatesToTimestamps } from "@/utils/firebaseDateUtils";
 import { processSnapshot } from "@/utils/firestoreListenerUtils";
+import { generateEventQRCode } from "@/utils/qrcodeUtils";
+import { v4 as uuidv4 } from 'uuid';
 
 export interface UseEventStoreReturn {
   events: Event[];
@@ -90,16 +92,25 @@ export const useEventStore = (): UseEventStoreReturn => {
   }, [toast, updateEvent, collectionName]);
 
   const addEvent = async (
-    eventInput: Omit<Event, "id" | "createdAt" | "updatedAt" | "qrCode">
+    eventInput: Omit<Event, "id" | "createdAt" | "updatedAt" | "qrCode" | "qrCodeValidUntil">
   ) => {
     try {
       const now = new Date();
-      const qrCode = `EV_QR_${eventInput.name
-        .replace(/\s+/g, "_")
-        .toUpperCase()}_${Date.now()}`;
+      const eventId = uuidv4(); // Generate a unique ID for the event
+      const token = uuidv4(); // Generate a unique token for the QR code
+
+      // Calculate QR code validity (e.g., 1 hour from now)
+      const qrCodeValidityDuration = 60 * 60 * 1000; // 1 hour in milliseconds
+      const qrCodeValidUntil = new Date(now.getTime() + qrCodeValidityDuration);
+
+      const qrCodeBase64 = await generateEventQRCode({ eventId, token });
+
       const dataToSave = convertDatesToTimestamps({
         ...eventInput,
-        qrCode,
+        id: eventId, // Assign the generated eventId
+        qrCode: qrCodeBase64,
+        qrCodeValidUntil: qrCodeValidUntil,
+        qrCodeToken: token,
         createdAt: now,
         updatedAt: now,
       });

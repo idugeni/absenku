@@ -18,26 +18,26 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="profile" className="flex items-center space-x-2">
+        <TabsList className="flex w-full justify-around md:grid md:grid-cols-5">
+          <TabsTrigger value="profile" className="flex-grow flex items-center space-x-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary w-full">
             <User className="h-4 w-4" />
-            <span>Profil</span>
+            <span className="hidden md:block">Profil</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center space-x-2">
+          <TabsTrigger value="notifications" className="flex-grow flex items-center space-x-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary w-full">
             <Bell className="h-4 w-4" />
-            <span>Notifikasi</span>
+            <span className="hidden md:block">Notifikasi</span>
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center space-x-2">
+          <TabsTrigger value="security" className="flex-grow flex items-center space-x-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary w-full">
             <Shield className="h-4 w-4" />
-            <span>Keamanan</span>
+            <span className="hidden md:block">Keamanan</span>
           </TabsTrigger>
-          <TabsTrigger value="system" className="flex items-center space-x-2">
+          <TabsTrigger value="system" className="flex-grow flex items-center space-x-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary w-full">
             <SettingsIcon className="h-4 w-4" />
-            <span>Sistem</span>
+            <span className="hidden md:block">Sistem</span>
           </TabsTrigger>
-          <TabsTrigger value="data" className="flex items-center space-x-2">
+          <TabsTrigger value="data" className="flex-grow flex items-center space-x-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary w-full">
             <Database className="h-4 w-4" />
-            <span>Data</span>
+            <span className="hidden md:block">Data</span>
           </TabsTrigger>
         </TabsList>
 

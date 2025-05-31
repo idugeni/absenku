@@ -238,8 +238,6 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
         onOpenChange={setEditDialogOpen}
         pegawai={selectedPegawai}
         onSaveSuccess={() => {
-          // Logika refresh data jika diperlukan
-          // Misalnya, memuat ulang data pegawai atau memperbarui state lokal
         }}
       />
     </>

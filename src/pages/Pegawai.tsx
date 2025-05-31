@@ -79,9 +79,9 @@ const PegawaiPage = () => {
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Daftar Pegawai</h1>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link to="/pegawai/new">
             <PlusCircle className="mr-2 h-4 w-4" /> Tambah Pegawai Baru
           </Link>

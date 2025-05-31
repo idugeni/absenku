@@ -9,11 +9,8 @@ const Index = () => {
       <main className="flex-1 p-4 md:p-8">
         {/* Welcome Section */}
         <Card className="mb-8 p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Dashboard Admin
-          </h1>
-          <p className="text-gray-600">
-          AbsenKu adalah solusi digital inovatif yang didedikasikan untuk mengelola dan memonitor daftar hadir secara komprehensif. Dengan fitur pencatatan akurat, rekapitulasi otomatis, dan pelaporan intuitif, AbsenKu bertujuan meningkatkan efektivitas administratif dan mendukung pengambilan keputusan berbasis data dalam organisasi.
+          <p className="text-gray-600 text-justify">
+          <span className="font-bold">AbsenKu</span> adalah solusi digital inovatif yang didedikasikan untuk mengelola dan memonitor daftar hadir secara komprehensif. Dengan fitur pencatatan akurat, rekapitulasi otomatis, dan pelaporan intuitif, <span className="font-bold">AbsenKu</span> bertujuan meningkatkan efektivitas administratif dan mendukung pengambilan keputusan berbasis data dalam organisasi.
           </p>
         </Card>
 
