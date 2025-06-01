@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Phone, Briefcase, Save } from 'lucide-react'; // Import additional icons
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; // Import Avatar components
+import { User, Mail, Phone, Briefcase, Save } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
@@ -16,7 +16,7 @@ interface ProfileSettingsProps {
   setLoading: (loading: boolean) => void;
 }
 
-// Function to generate a consistent gradient color based on user ID or email
+
 const getGradientColorClass = (id: string) => {
   const colors = [
     'from-blue-400 to-blue-600',
@@ -81,7 +81,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ loading, setLoading }
         variant: "default"
       });
     } catch (error) {
-      console.error("Gagal memperbarui profil:", error);
+
       toast({
         title: "Error",
         description: "Gagal memperbarui profil. Silakan coba lagi.",
@@ -92,7 +92,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ loading, setLoading }
     }
   };
 
-  // Helper to get initials for avatar fallback
+  
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'AK';
     const parts = name.split(' ');

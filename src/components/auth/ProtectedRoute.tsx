@@ -10,11 +10,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading authentication...</div>; // Atau spinner/komponen loading lainnya
+    return <div>Loading authentication...</div>;
   }
 
   if (!currentUser) {
-    // Pengguna tidak terautentikasi, arahkan ke halaman login
+    
     return <Navigate to="/login" replace />;
   }
 

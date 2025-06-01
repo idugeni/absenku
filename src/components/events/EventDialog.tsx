@@ -3,16 +3,14 @@ import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
-import { Event, Pegawai } from '@/types'; // Asumsi Pegawai type ada di '@/types'
+import { Event, Pegawai } from '@/types';
 import { useAuth } from '@/contexts/useAuth';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
-// --- (Definisi tipe FormDataState, EventDialogProps, getDefaultFormData) ---
 type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
 
 interface FormDataState {
@@ -35,7 +33,6 @@ interface EventDialogProps {
 
 const getDefaultFormData = (event?: Event | null): FormDataState => {
   if (event) {
-    // Pastikan event.startDate dan event.endDate adalah instance Date atau string yang valid
     const startDate = event.startDate instanceof Date ? event.startDate : new Date(event.startDate);
     const endDate = event.endDate instanceof Date ? event.endDate : new Date(event.endDate);
 
@@ -70,7 +67,6 @@ const getDefaultFormData = (event?: Event | null): FormDataState => {
   };
 };
 
-// Helper function to format Date object to 'YYYY-MM-DDTHH:mm' in local time
 const formatToDatetimeLocal = (date: Date): string => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -79,7 +75,6 @@ const formatToDatetimeLocal = (date: Date): string => {
   const minutes = date.getMinutes().toString().padStart(2, '0');
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
-// --- (Akhir dari definisi) ---
 
 export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventDialogProps) {
   const { addEvent, updateEvent, pegawai = [] } = useAppFirestore();
@@ -151,7 +146,7 @@ export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventD
       }
       onOpenChange(false);
       onSaveSuccess?.();
-    } catch (error: unknown) { // Menggunakan 'unknown' untuk error dan melakukan type assertion atau type narrowing
+    } catch (error: unknown) {
       let errorMessage = "Terjadi kesalahan saat menyimpan kegiatan. Silakan coba lagi.";
       if (error instanceof Error) {
         errorMessage = error.message;

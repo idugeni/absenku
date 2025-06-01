@@ -1,15 +1,10 @@
 import { useAbsensi } from '@/hooks/useAbsensi';
-
-// UI Components
 import { Card } from '@/components/ui/card';
-
-// Custom Components
 import AbsensiForm from '@/components/absensi/AbsensiForm';
 import EventDetailsCard from '@/components/absensi/EventDetailsCard';
 
 const Absensi: React.FC = () => {
   const { nip, setNip, eventData, isLoading, isSubmitting, handleAbsensi } = useAbsensi();
-
 
   if (isLoading) {
     return (
@@ -33,7 +28,7 @@ const Absensi: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 flex justify-center items-center min-h-screen">
-      <Card className="w-full max-w-lg mx-auto shadow-lg">
+      <Card className="w-full max-w-lg mx-auto shadow-lg py-0">
         <EventDetailsCard eventData={eventData} />
         <AbsensiForm
           nip={nip}

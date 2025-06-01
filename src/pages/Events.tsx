@@ -5,7 +5,7 @@ import { Event } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { QrCode, PlusCircle, Calendar, MapPin, Edit, Trash2, Clock, Info } from 'lucide-react';
-import QRCodeGenerator from '@/components/qr/QRCodeGenerator'; // Import QRCodeGenerator
+import QRCodeGenerator from '@/components/qr/QRCodeGenerator';
 import {
   Card,
   CardContent,
@@ -38,14 +38,14 @@ const getEventStatus = (startDate: Date, endDate: Date): 'upcoming' | 'ongoing' 
   } else if (isAfter(now, startDate) || isEqual(now, startDate) && isBefore(now, endDate) || isEqual(now, endDate)) {
     return 'ongoing';
   }
-  return 'upcoming'; // Default or fallback
+  return 'upcoming';
 };
 
 const Events = () => {
   const { events, deleteEvent, eventsLoading, updateEvent } = useEventStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isQrCodeDialogOpen, setIsQrCodeDialogOpen] = useState(false); // State for QR Code dialog
+  const [isQrCodeDialogOpen, setIsQrCodeDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleAddEvent = useCallback(() => {
@@ -58,7 +58,7 @@ const Events = () => {
     setIsDialogOpen(true);
   }, []);
 
-  const handleShowQrCode = useCallback((event: Event) => { // New handler for QR Code
+  const handleShowQrCode = useCallback((event: Event) => {
     setSelectedEvent(event);
     setIsQrCodeDialogOpen(true);
   }, []);
@@ -71,7 +71,7 @@ const Events = () => {
         description: "Kegiatan berhasil dihapus.",
         variant: "success",
       });
-    } catch (error: unknown) {
+    } catch (error) {
       let errorMessage = "Terjadi kesalahan saat menghapus kegiatan.";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -94,7 +94,7 @@ const Events = () => {
           updateEvent(event.id, { status: currentStatus });
         }
       });
-    }, 60 * 1000); // Check every minute
+    }, 60 * 1000);
 
     return () => clearInterval(interval);
   }, [events, updateEvent]);
@@ -104,7 +104,6 @@ const Events = () => {
     setSelectedEvent(null);
   }, []);
 
-  // Skeleton Loader untuk tampilan card full width dengan separator
   const EventCardSkeleton = () => (
     <div className="grid grid-cols-1 gap-6">
       {Array.from({ length: 3 }).map((_, index) => (
@@ -113,14 +112,14 @@ const Events = () => {
             <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
             <div className="h-4 bg-gray-200 rounded w-full"></div>
           </CardHeader>
-          <div className="border-t border-gray-200 mx-6"></div> {/* Separator */}
+          <div className="border-t border-gray-200 mx-6"></div>
           <CardContent className="flex-grow space-y-3 py-4">
             <div className="h-4 bg-gray-200 rounded w-full"></div>
             <div className="h-4 bg-gray-200 rounded w-5/6"></div>
             <div className="h-4 bg-gray-200 rounded w-2/3"></div>
             <div className="h-5 bg-gray-200 rounded w-1/4 mt-2"></div>
           </CardContent>
-          <div className="border-t border-gray-200 mx-6"></div> {/* Separator */}
+          <div className="border-t border-gray-200 mx-6"></div>
           <CardFooter className="flex justify-end gap-2 pt-4">
             <div className="h-9 w-9 bg-gray-200 rounded-md"></div>
             <div className="h-9 w-9 bg-gray-200 rounded-md"></div>
@@ -169,7 +168,6 @@ const Events = () => {
                     </CardDescription>
                   </CardHeader>
 
-                  {/* Separator antara CardHeader dan CardContent */}
                   <div className="border-t border-gray-200 mx-6"></div>
 
                   <CardContent className="flex-grow py-4 text-sm text-gray-700">
@@ -209,7 +207,6 @@ const Events = () => {
                     </div>
                   </CardContent>
 
-                  {/* Separator antara CardContent dan CardFooter */}
                   <div className="border-t border-gray-200 mx-6"></div>
 
                   <CardFooter className="flex flex-col sm:flex-row w-full gap-4 pt-4 sm:justify-center">
@@ -223,7 +220,7 @@ const Events = () => {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => handleShowQrCode(event)} // QR Code button
+                      onClick={() => handleShowQrCode(event)}
                       className="flex items-center gap-2 w-full sm:w-auto"
                     >
                       <QrCode className="h-4 w-4" />
@@ -231,7 +228,7 @@ const Events = () => {
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button 
+                        <Button
                           variant="destructive"
                           className="flex items-center gap-2 w-full sm:w-auto"
                         >
@@ -269,7 +266,6 @@ const Events = () => {
         event={selectedEvent}
       />
 
-      {/* QR Code Generator Dialog */}
       {selectedEvent && (
         <QRCodeGenerator
           open={isQrCodeDialogOpen}

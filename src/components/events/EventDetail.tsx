@@ -26,7 +26,7 @@ const EventDetail = ({ open, onOpenChange, event }: EventDetailProps) => {
   const handleDelete = async () => {
     if (event && event.id) {
       await deleteEvent(event.id);
-      onOpenChange(false); // Close the dialog after deletion
+      onOpenChange(false);
     }
   };
 

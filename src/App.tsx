@@ -2,11 +2,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/contexts/useAuth';
-import { useInactivityLogout } from '@/hooks/useInactivityLogout';
 import { AuthContextType } from '@/contexts/AuthContextDefinition';
 import { Toaster } from '@/components/ui/toaster';
-import ProtectedRoute from '@/components/auth/ProtectedRoute'; // Import ProtectedRoute
-import ErrorBoundary from '@/components/layout/ErrorBoundary'; // Import ErrorBoundary
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import ErrorBoundary from '@/components/layout/ErrorBoundary';
 import Login from '@/pages/Login';
 import MainLayout from '@/layouts/MainLayout';
 import Index from '@/pages/Index';
@@ -23,18 +22,18 @@ import Absensi from '@/pages/Absensi';
 
 function App() {
   const { currentUser, loading } = useAuth() as AuthContextType;
-  useInactivityLogout();
+
   return (
     <ErrorBoundary>
       <AuthProvider>
         <Router>
-          {/* <AuthStatusChecker /> */}
+          
           <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/absensi/validate" element={<Absensi />} />
               <Route path="/thank-you" element={<ThankYou />} />
-              {/* Protected Routes */}
+              
               <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
                 <Route path="/" element={<Index />} />
                 <Route path="/reports" element={<Reports />} />
@@ -45,7 +44,7 @@ function App() {
                 <Route path="/pegawai/:id" element={<PegawaiDetail />} />
                 <Route path="/events" element={<Events />} />
               </Route>
-              {/* End Protected Routes */}
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

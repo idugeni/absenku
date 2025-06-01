@@ -5,8 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { Lock, Key, LogOut, Laptop, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'; // Import additional icons
-import { useState } from 'react'; // Import useState for password visibility
+import { Lock, Key, LogOut, Laptop, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 
 const SecuritySettings = () => {
   const { logout } = useAuth();
@@ -14,12 +14,12 @@ const SecuritySettings = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // State for password inputs (add these to enable actual input handling)
+  
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Placeholder for password strength logic (you'll need to implement this)
+  
   const getPasswordStrength = (password: string) => {
     if (password.length === 0) return { label: 'Kosong', color: 'text-gray-400' };
     if (password.length < 6) return { label: 'Sangat Lemah', color: 'text-red-500' };
@@ -34,9 +34,9 @@ const SecuritySettings = () => {
   const newPasswordStrength = getPasswordStrength(newPassword);
 
   const handleChangePassword = () => {
-    // Implement your password change logic here
+    
 
-    // Add toast notifications for success/failure
+    
   };
 
   return (

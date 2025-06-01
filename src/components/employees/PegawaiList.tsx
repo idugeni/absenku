@@ -4,11 +4,11 @@ import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Search, UserPlus, Eye, QrCode } from 'lucide-react'; // QrCode tidak digunakan, bisa dihapus jika tidak perlu
+import { Edit, Trash2, Search, UserPlus, Eye, QrCode } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pegawai, useAppFirestore } from '@/hooks/useAppFirestore';
 import PegawaiDialog from '@/components/employees/PegawaiDialog';
-import { useToast } from '@/components/ui/use-toast'; // Pastikan useToast diimpor
+import { useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,9 +30,9 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
   const navigate = useNavigate();
   const { pegawai, deletePegawai } = useAppFirestore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPegawai, setSelectedPegawai] = useState<Pegawai | null>(null); // Menetapkan tipe Pegawai | null
+  const [selectedPegawai, setSelectedPegawai] = useState<Pegawai | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const { toast } = useToast(); // Inisialisasi useToast
+  const { toast } = useToast();
 
   const filteredPegawai = pegawai.filter(emp =>
     (emp.nama?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -41,7 +41,6 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
     (emp.jabatan?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
-  // Menggabungkan logika badge dan varian
   const getStatusBadge = useCallback((status: string) => {
     let variant: "default" | "secondary" | "destructive" | "outline" | null = "outline";
     let colorClasses = "";
@@ -49,7 +48,7 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
 
     switch (status) {
       case 'aktif':
-        variant = null; // Default variant
+        variant = null;
         colorClasses = "bg-green-100 text-green-800 border-green-200";
         text = "Aktif";
         break;
@@ -60,11 +59,10 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
         break;
       case 'cuti':
         variant = "outline";
-        colorClasses = "bg-yellow-100 text-yellow-800 border-yellow-200"; // Warna kuning untuk outline
+        colorClasses = "bg-yellow-100 text-yellow-800 border-yellow-200";
         text = "Cuti";
         break;
       default:
-        // Already handled by default variant and text
         break;
     }
 
@@ -78,7 +76,7 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
 
   const handleViewDetail = useCallback((pegawaiId: string) => {
     navigate(`/pegawai/${pegawaiId}`);
-    onOpenChange(false); // Menutup dialog setelah navigasi
+    onOpenChange(false);
   }, [navigate, onOpenChange]);
 
   const handleDelete = useCallback(async (id: string) => {
@@ -87,7 +85,7 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
       toast({
         title: "Berhasil!",
         description: "Data pegawai berhasil dihapus.",
-        variant: "success", // Pastikan Anda memiliki varian 'success' di useToast
+        variant: "success",
       });
     } catch (error: unknown) {
       let errorMessage = "Terjadi kesalahan saat menghapus data pegawai.";
@@ -163,7 +161,7 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredPegawai.map((pegawaiItem) => ( // Ganti 'pegawai' menjadi 'pegawaiItem' untuk menghindari shadowing
+                      filteredPegawai.map((pegawaiItem) => (
                         <TableRow key={pegawaiItem.id} className="hover:bg-gray-50">
                           <TableCell className="font-medium">{pegawaiItem.nip}</TableCell>
                           <TableCell className="font-medium">{pegawaiItem.nama}</TableCell>
@@ -173,8 +171,8 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
                           <TableCell>
                             <div className="flex space-x-1 justify-center">
                               <Button
-                                variant="ghost" // Menggunakan ghost variant
-                                size="icon" // Menggunakan icon size
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => handleViewDetail(pegawaiItem.id!)}
                                 className="h-8 w-8"
                                 title="Lihat Detail"
@@ -182,8 +180,8 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
                                 <Eye className="h-4 w-4" />
                               </Button>
                               <Button
-                                variant="ghost" // Menggunakan ghost variant
-                                size="icon" // Menggunakan icon size
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => handleEdit(pegawaiItem)}
                                 className="h-8 w-8"
                                 title="Edit"
@@ -193,9 +191,9 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button
-                                    variant="ghost" // Menggunakan ghost variant
-                                    size="icon" // Menggunakan icon size
-                                    className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700" // Warna khusus untuk hapus
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700"
                                     title="Hapus"
                                   >
                                     <Trash2 className="h-4 w-4" />

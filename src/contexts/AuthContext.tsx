@@ -12,6 +12,7 @@ import { auth, db } from '@/lib/firebase';
 import { AuthContext, AuthContextType, UserProfile } from '@/contexts/AuthContextDefinition';
 import { useToast } from '@/components/ui/use-toast';
 
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -80,10 +81,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       unsubscribe();
-      // If there's an active profile listener, unsubscribe it too
-      // This assumes unsubscribeProfile is defined in the same scope or accessible
-      // For simplicity, we'll assume it's handled by the outer unsubscribe if user becomes null
-      // or a new user logs in.
+      
+      
+      
+      
     };
   }, [toast]);
 

@@ -17,7 +17,7 @@ const AbsensiForm: React.FC<AbsensiFormProps> = ({
   handleAbsensi,
 }) => {
   return (
-    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+    <div className="px-6 py-6 border-t border-gray-200 dark:border-gray-700">
       <label htmlFor="nip" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Nomor Induk Pegawai (NIP)
       </label>

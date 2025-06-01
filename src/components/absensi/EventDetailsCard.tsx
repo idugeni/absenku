@@ -16,14 +16,14 @@ const EventDetailsCard: React.FC<EventDetailsCardProps> = ({ eventData }) => {
       const dateToFormat = dateValue instanceof Timestamp ? dateValue.toDate() : new Date(dateValue);
       return format(dateToFormat, 'dd MMMM yyyy HH:mm', { locale: localeID });
     } catch (error) {
-      console.error("Error formatting date:", error);
+
       return 'Tanggal tidak valid';
     }
   };
 
   return (
     <>
-      <CardHeader className="bg-gray-50 dark:bg-gray-800 rounded-t-lg">
+      <CardHeader className="bg-gray-50 dark:bg-gray-800 rounded-t-lg py-6">
         <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           {eventData.name}
         </CardTitle>
@@ -36,7 +36,7 @@ const EventDetailsCard: React.FC<EventDetailsCardProps> = ({ eventData }) => {
           </div>
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 p-6">
+      <CardContent className="space-y-4">
         <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
           <MapPin className="h-5 w-5 flex-shrink-0 text-blue-500" />
           <span>{eventData.location || 'Lokasi tidak ditentukan'}</span>
@@ -49,7 +49,7 @@ const EventDetailsCard: React.FC<EventDetailsCardProps> = ({ eventData }) => {
         </div>
         <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
           <QrCode className="h-5 w-5 flex-shrink-0 text-purple-500" />
-          <span>Token QR: {eventData.qrCodeToken || 'N/A'}</span>
+          <span>{eventData.qrCodeToken || 'N/A'}</span>
         </div>
       </CardContent>
     </>

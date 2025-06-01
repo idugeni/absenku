@@ -1,4 +1,3 @@
-// src/hooks/useAttendanceStore.ts
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -71,7 +70,7 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
 
       const dataToSave = convertDatesToTimestamps({
         ...attendanceInput,
-        eventId: attendanceInput.event.id, // Menambahkan eventId dari objek event
+        eventId: attendanceInput.event.id,
         checkInTime,
         status,
         createdAt: new Date(),

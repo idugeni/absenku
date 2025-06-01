@@ -15,14 +15,14 @@ import { AuthContextType } from '@/contexts/AuthContextDefinition';
 const MainLayout: React.FC = () => {
   const { loading } = useAuth() as AuthContextType;
   const [isCollapsed, setIsCollapsed] = React.useState(
-    localStorage.getItem('sidebarCollapsed') === 'true'
+    false
   );
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
   const location = useLocation();
 
   React.useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 640) { // Tailwind's 'sm' breakpoint
+      if (window.innerWidth >= 640) {
         setIsMobileNavOpen(false);
       }
     };
@@ -62,7 +62,6 @@ const MainLayout: React.FC = () => {
               className="ml-auto rounded-full"
               onClick={() => {
                 setIsCollapsed(!isCollapsed);
-                localStorage.setItem('sidebarCollapsed', String(!isCollapsed));
               }}
             >
               {isCollapsed ? (

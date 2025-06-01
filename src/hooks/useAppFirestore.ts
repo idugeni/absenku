@@ -1,4 +1,3 @@
-// src/hooks/useAppFirestore.ts
 import {
     useFirestoreBackup,
     UseFirestoreBackupReturn,
@@ -15,7 +14,7 @@ import {
   } from "@/hooks/useUserProfileStore";
   import { db } from "@/lib/firebase";
 
-  // Gabungkan semua tipe return dari hook individual
+  
   export interface AppFirestoreReturn
     extends UseFirestoreBackupReturn,
       UsePegawaiStoreReturn,

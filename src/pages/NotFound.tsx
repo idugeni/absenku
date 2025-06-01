@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { AlertTriangle, Home, Info } from "lucide-react"; // Menambahkan ikon Info untuk footer
+import { AlertTriangle, Home, Info } from "lucide-react";
 import { useToast } from '@/components/ui/use-toast';
 
 const NotFound = () => {
@@ -8,22 +8,20 @@ const NotFound = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    console.error(
-      `404 Error: Pengguna mencoba mengakses rute yang tidak ada: ${location.pathname}`
-    );
-    // Menggunakan toast dengan deskripsi yang lebih user-friendly
+
+    
     toast({
       title: "Halaman Tidak Ditemukan",
       description: "Maaf, halaman yang Anda cari tidak ada.",
       variant: "destructive",
-      // Karena Anda pernah mengalami error icon pada toast, saya tidak menambahkannya disini.
-      // Jika Anda ingin icon, Anda bisa menambahkannya langsung ke description atau memodifikasi ToastProvider.
+      
+      
     });
-  }, [location.pathname, toast]); // Menambahkan 'toast' ke dependency array
+  }, [location.pathname, toast]);
 
   return (
-    // Menggunakan h-screen dan overflow-hidden untuk memastikan tidak ada scroll pada root
-    // Padding diterapkan di Card untuk mengelola ruang internal
+    
+    
     <div className="h-screen max-w-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-gray-200 dark:from-slate-800 dark:to-gray-900 overflow-hidden relative">
       <div className="relative z-10 bg-white dark:bg-slate-800/50 backdrop-blur-lg shadow-2xl rounded-xl p-8 md:p-12 lg:p-16 max-w-2xl w-11/12 text-center transform transition-all duration-500 ease-in-out border border-gray-200 dark:border-gray-700">
         <div className="mb-6 text-indigo-500 dark:text-indigo-400">

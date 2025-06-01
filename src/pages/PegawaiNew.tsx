@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppFirestore } from '@/hooks/useAppFirestore'; // Pastikan path ini benar
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'; // Tambahkan CardDescription, CardFooter
+import { useAppFirestore } from '@/hooks/useAppFirestore';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -20,7 +20,7 @@ const PegawaiNew = () => {
     tanggalBergabung: new Date(),
     phoneNumber: '',
   });
-  const [isLoading, setIsLoading] = useState(false); // State untuk loading submit
+  const [isLoading, setIsLoading] = useState(false);
   const { addPegawai } = useAppFirestore();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -48,7 +48,7 @@ const PegawaiNew = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validasi sederhana (bisa diperluas)
+    
     if (!formData.nama || !formData.nip || !formData.jabatan || !formData.email) {
         toast({
             title: 'Data Tidak Lengkap',
@@ -59,10 +59,10 @@ const PegawaiNew = () => {
     }
     setIsLoading(true);
     try {
-      // Pastikan semua field yang dibutuhkan oleh addPegawai ada
-      // addPegawai mengharapkan Omit<Pegawai, 'id' | 'createdAt' | 'updatedAt' | 'qrCode'>
-      // Jadi kita perlu memastikan formData sesuai dengan itu.
-      // Untuk field opsional seperti tanggalBergabung, tidak masalah jika undefined.
+      
+      
+      
+      
       const dataToSubmit: Omit<Pegawai, 'id' | 'createdAt' | 'updatedAt' | 'qrCode'> = {
         nama: formData.nama!,
         nip: formData.nip!,
@@ -80,7 +80,7 @@ const PegawaiNew = () => {
       toast({
         title: 'Berhasil!',
         description: 'Data pegawai berhasil ditambahkan.',
-        className: 'bg-green-100 border-green-400 text-green-700', // Custom style untuk toast sukses
+        className: 'bg-green-100 border-green-400 text-green-700',
       });
       navigate('/pegawai');
     } catch (error) {

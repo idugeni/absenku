@@ -1,18 +1,12 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; // Input tidak digunakan, bisa dihapus jika tidak ada rencana penggunaan
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Download, Calendar, Users, TrendingUp, Filter } from 'lucide-react'; // Filter tidak digunakan, bisa dihapus
+import { Download, Calendar, Users, TrendingUp } from 'lucide-react';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
 import { useToast } from '@/components/ui/use-toast';
-
-// Pertimbangkan untuk mendefinisikan tipe data jika belum ada di hook useAppFirestore
-// interface Pegawai { id: string; nama: string; /* ...properti lain */ }
-// interface Event { id: string; name: string; status: string; /* ...properti lain */ }
-// interface AttendanceRecord { id: string; pegawaiId: string; eventId: string; checkInTime?: Date; status: string; location?: string; /* ...properti lain */ }
 
 const ATTENDANCE_STATUS = {
   PRESENT: 'present',
@@ -27,12 +21,11 @@ const EVENT_STATUS = {
   UPCOMING: 'upcoming',
 } as const;
 
-// Komponen terpisah untuk Statistik Ringkasan agar lebih modular
 interface StatCardProps {
   title: string;
   value: string | number;
   description: string;
-  icon: React.ElementType; // Menggunakan React.ElementType untuk fleksibilitas ikon
+  icon: React.ElementType;
 }
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, description, icon: IconComponent }) => (
@@ -48,7 +41,6 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, description, icon: Ic
   </Card>
 );
 
-// Komponen untuk progress bar statistik kehadiran
 interface AttendanceProgressBarProps {
   label: string;
   value: number;
@@ -74,15 +66,13 @@ const AttendanceProgressBar: React.FC<AttendanceProgressBarProps> = ({ label, va
   );
 };
 
-
 const Reports = () => {
   const { pegawai, events, attendance } = useAppFirestore();
-  const [dateRange, setDateRange] = useState<string>('this_month'); // Tipe eksplisit untuk state
+  const [dateRange, setDateRange] = useState<string>('this_month');
   const [eventFilter, setEventFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { toast } = useToast();
 
-  // Memoize kalkulasi statistik untuk menghindari kalkulasi ulang yang tidak perlu
   const stats = useMemo(() => {
     return {
       totalPegawai: pegawai?.length || 0,
@@ -105,13 +95,8 @@ const Reports = () => {
   const filteredAttendance = useMemo(() => {
     if (!attendance) return [];
     
-    let filtered = [...attendance]; // Salin array untuk menghindari mutasi
+    let filtered = [...attendance];
     
-    // Implementasi filter berdasarkan dateRange (contoh sederhana, perlu logika tanggal yang lebih baik)
-    // if (dateRange !== 'all_time') {
-    //   // filtered = filtered.filter(a => isWithinDateRange(a.checkInTime, dateRange));
-    // }
-
     if (eventFilter !== 'all') {
       filtered = filtered.filter(a => a.eventId === eventFilter);
     }
@@ -121,9 +106,8 @@ const Reports = () => {
     }
     
     return filtered;
-  }, [attendance, eventFilter, statusFilter]); // dateRange tidak digunakan dalam logika filter saat ini
+  }, [attendance, eventFilter, statusFilter]);
 
-  // Konfigurasi Badge untuk status, agar lebih mudah dikelola
   const statusBadgeConfig: Record<AttendanceStatusType, { className: string; label: string }> = {
     [ATTENDANCE_STATUS.PRESENT]: { className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200", label: "Hadir" },
     [ATTENDANCE_STATUS.LATE]: { className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200", label: "Terlambat" },
@@ -136,20 +120,16 @@ const Reports = () => {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  // Gunakan useCallback untuk fungsi yang dilewatkan sebagai prop atau dependensi useEffect
   const handleExportReport = useCallback(() => {
-    // Implementasi export laporan yang lebih baik (misalnya, menggunakan library CSV atau PDF)
     toast({
       title: "Export Laporan",
       description: "Fitur export akan segera tersedia dengan fungsionalitas penuh.",
       variant: "default",
     });
-  }, [toast]); // Tambahkan dependensi jika logika export menggunakannya
+  }, [toast]);
 
-  // Format tanggal yang lebih konsisten
   const formatCheckInTime = (date?: Date | { toDate: () => Date }): string => {
     if (!date) return 'Unknown';
-    // Handle Firestore Timestamp object
     const dateObject = date instanceof Date ? date : date?.toDate?.();
     if (!dateObject) return 'Invalid Date';
     
@@ -162,21 +142,27 @@ const Reports = () => {
         minute: '2-digit',
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: `Error formatting date: ${error.message}`,
-        variant: "destructive",
-      });
+      if (error instanceof Error) {
+        toast({
+          title: "Error",
+          description: `Error formatting date: ${error.message}`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: `An unknown error occurred while formatting date.`,
+          variant: "destructive",
+        });
+      }
       return "Invalid Date";
     }
   };
 
-  // Penanganan untuk data yang mungkin belum termuat
   if (!pegawai || !events || !attendance) {
     return (
       <div className="max-w-7xl mx-auto px-6 py-8 text-center">
         <p className="text-gray-600 dark:text-gray-400">Memuat data laporan...</p>
-        {/* Pertimbangkan untuk menambahkan komponen Skeleton Loading di sini */}
       </div>
     );
   }
@@ -188,7 +174,6 @@ const Reports = () => {
         <p className="text-gray-600 dark:text-gray-400">Analisis dan statistik kehadiran pegawai pada berbagai kegiatan.</p>
       </div>
 
-      {/* Summary Statistics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <StatCard title="Total Pegawai" value={stats.totalPegawai} description="Pegawai terdaftar" icon={Users} />
         <StatCard title="Total Kegiatan" value={stats.totalEvents} description={`${stats.activeEvents} kegiatan aktif`} icon={Calendar} />
@@ -201,7 +186,6 @@ const Reports = () => {
         />
       </div>
 
-      {/* Attendance Statistics & Filters */}
       <div className="grid gap-6 lg:grid-cols-3 mb-8">
         <Card className="dark:bg-gray-800">
           <CardHeader>
@@ -216,97 +200,88 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden"> {/* Menambah shadow dan rounded-xl untuk estetika */}
-      <CardHeader className="p-6 border-b border-gray-200 dark:border-gray-700"> {/* Border bawah untuk pemisah visual */}
-        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100"> {/* Ukuran font lebih besar, bold */}
-          Filter Laporan Analisis
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className="grid gap-6 md:grid-cols-3"> {/* Gap antar kolom sedikit diperbesar */}
-          {/* Filter Periode */}
-          <div className="space-y-2">
-            <label htmlFor="dateRangeSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Periode Laporan
-            </label>
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger id="dateRangeSelect" className="w-full"> {/* Pastikan trigger mengisi lebar penuh */}
-                <SelectValue placeholder="Pilih rentang periode" /> {/* Placeholder yang lebih deskriptif */}
-              </SelectTrigger>
-              <SelectContent>
-                {/* Opsi yang relevan untuk periode */}
-                <SelectItem value="this_week">Minggu Ini</SelectItem>
-                <SelectItem value="this_month">Bulan Ini</SelectItem>
-                <SelectItem value="last_month">Bulan Lalu</SelectItem>
-                <SelectItem value="this_year">Tahun Ini</SelectItem>
-                <SelectItem value="last_year">Tahun Lalu</SelectItem> {/* Menambah opsi tahun lalu */}
-                {/* Anda dapat menambahkan opsi 'Custom Range' di sini jika ingin integrasi date picker */}
-                {/* <SelectItem value="custom">Rentang Kustom...</SelectItem> */}
-              </SelectContent>
-            </Select>
-          </div>
+        <Card className="lg:col-span-2 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden">
+          <CardHeader className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Filter Laporan Analisis
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="space-y-2">
+                <label htmlFor="dateRangeSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Periode Laporan
+                </label>
+                <Select value={dateRange} onValueChange={setDateRange}>
+                  <SelectTrigger id="dateRangeSelect" className="w-full">
+                    <SelectValue placeholder="Pilih rentang periode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="this_week">Minggu Ini</SelectItem>
+                    <SelectItem value="this_month">Bulan Ini</SelectItem>
+                    <SelectItem value="last_month">Bulan Lalu</SelectItem>
+                    <SelectItem value="this_year">Tahun Ini</SelectItem>
+                    <SelectItem value="last_year">Tahun Lalu</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Filter Kegiatan */}
-          <div className="space-y-2">
-            <label htmlFor="eventFilterSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Jenis Kegiatan
-            </label>
-            <Select value={eventFilter} onValueChange={setEventFilter}>
-              <SelectTrigger id="eventFilterSelect" className="w-full">
-                <SelectValue placeholder="Pilih jenis kegiatan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Kegiatan</SelectItem>
-                {/* Pastikan `events` adalah array yang valid dan `event.id` unik */}
-                {events && events.map(event => (
-                  <SelectItem key={event.id} value={event.id!}>
-                    {event.name || 'Kegiatan Tanpa Nama'} {/* Fallback jika nama tidak ada */}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="space-y-2">
+                <label htmlFor="eventFilterSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Jenis Kegiatan
+                </label>
+                <Select value={eventFilter} onValueChange={setEventFilter}>
+                  <SelectTrigger id="eventFilterSelect" className="w-full">
+                    <SelectValue placeholder="Pilih jenis kegiatan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Kegiatan</SelectItem>
+                    {events && events.map(event => (
+                      <SelectItem key={event.id} value={event.id!}>
+                        {event.name || 'Kegiatan Tanpa Nama'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Filter Status Kehadiran */}
-          <div className="space-y-2">
-            <label htmlFor="statusFilterSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Status Kehadiran
-            </label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger id="statusFilterSelect" className="w-full">
-                <SelectValue placeholder="Pilih status kehadiran" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Status</SelectItem>
-                <SelectItem value={ATTENDANCE_STATUS.PRESENT}>Hadir</SelectItem>
-                <SelectItem value={ATTENDANCE_STATUS.LATE}>Terlambat</SelectItem>
-                <SelectItem value={ATTENDANCE_STATUS.ABSENT}>Tidak Hadir</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+              <div className="space-y-2">
+                <label htmlFor="statusFilterSelect" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Status Kehadiran
+                </label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger id="statusFilterSelect" className="w-full">
+                    <SelectValue placeholder="Pilih status kehadiran" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Status</SelectItem>
+                    <SelectItem value={ATTENDANCE_STATUS.PRESENT}>Hadir</SelectItem>
+                    <SelectItem value={ATTENDANCE_STATUS.LATE}>Terlambat</SelectItem>
+                    <SelectItem value={ATTENDANCE_STATUS.ABSENT}>Tidak Hadir</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-        {/* Tombol Export */}
-        <div className="flex justify-end mt-8"> {/* Jarak lebih ke atas untuk tombol */}
-          <Button
-            onClick={handleExportReport}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-md transition-colors duration-200 ease-in-out"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export Laporan
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            <div className="flex justify-end mt-8">
+              <Button
+                onClick={handleExportReport}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-md transition-colors duration-200 ease-in-out"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Laporan
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Detailed Attendance Table */}
       <Card className="dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="text-lg">Detail Kehadiran</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto"> {/* Menggunakan overflow-x-auto untuk responsivitas tabel */}
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -314,7 +289,6 @@ const Reports = () => {
                   <TableHead>Kegiatan</TableHead>
                   <TableHead>Waktu Check-in</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Lokasi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -339,7 +313,6 @@ const Reports = () => {
                           {formatCheckInTime(record.checkInTime)}
                         </TableCell>
                         <TableCell>{getStatusBadge(record.status)}</TableCell>
-                        <TableCell>{record.location || '-'}</TableCell>
                       </TableRow>
                     );
                   })
@@ -347,7 +320,6 @@ const Reports = () => {
               </TableBody>
             </Table>
           </div>
-          {/* Pertimbangkan untuk menambahkan paginasi di sini jika data sangat banyak */}
         </CardContent>
       </Card>
     </div>

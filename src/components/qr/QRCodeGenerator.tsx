@@ -1,8 +1,7 @@
 import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-
+import { useToast } from '@/hooks/use-toast';
 import { Event } from '@/types';
 
 interface QRCodeGeneratorProps {
@@ -12,19 +11,89 @@ interface QRCodeGeneratorProps {
 }
 
 const QRCodeGenerator = ({ open, onOpenChange, eventData }: QRCodeGeneratorProps) => {
+  const { toast } = useToast();
   if (!eventData) return null;
 
   const downloadQRCode = async () => {
-    const qrCodeElement = document.querySelector('.qrcode-image'); // Select the QR code image element
-    if (qrCodeElement) {
-      const canvas = await html2canvas(qrCodeElement as HTMLElement);
-      const image = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = `QR_Code_${eventData.name.replace(/\s+/g, '_')}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (!eventData.qrCode) {
+      toast({
+        title: "Error",
+        description: "QR Code tidak tersedia untuk diunduh.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    
+    const isSvgDataUrl = eventData.qrCode.startsWith('data:image/svg+xml;');
+
+    try {
+      if (isSvgDataUrl) {
+        
+        const img = new Image();
+        img.onload = () => {
+          const padding = 20;
+          const scale = 3;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = (img.width + 2 * padding) * scale;
+          canvas.height = (img.height + 2 * padding) * scale;
+          const ctx = canvas.getContext('2d');
+
+          if (ctx) {
+            ctx.scale(scale, scale);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width / scale, canvas.height / scale);
+
+            ctx.drawImage(img, padding, padding, img.width, img.height);
+
+            const pngDataUrl = canvas.toDataURL('image/png');
+
+            const link = document.createElement('a');
+            link.href = pngDataUrl;
+            link.download = `QR_Code_${eventData.name.replace(/\s+/g, '_')}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            toast({
+              title: "Berhasil",
+              description: "QR Code berhasil diunduh sebagai PNG dengan padding dan resolusi tinggi.",
+            });
+          } else {
+            throw new Error("Gagal mendapatkan konteks 2D dari canvas.");
+          }
+        };
+        img.onerror = (error) => {
+
+          toast({
+            title: "Error",
+            description: "Gagal mengkonversi SVG ke PNG.",
+            variant: "destructive",
+          });
+        };
+        img.src = eventData.qrCode;
+      } else {
+        
+        const link = document.createElement('a');
+        link.href = eventData.qrCode;
+        link.download = `QR_Code_${eventData.name.replace(/\s+/g, '_')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast({
+          title: "Berhasil",
+          description: "QR Code berhasil diunduh.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Gagal mengunduh QR Code.",
+        variant: "destructive",
+      });
+
     }
   };
 
@@ -32,7 +101,7 @@ const QRCodeGenerator = ({ open, onOpenChange, eventData }: QRCodeGeneratorProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>QR Code Kegiatan: {eventData.name}</DialogTitle>
+          <DialogTitle>{eventData.name}</DialogTitle>
           <DialogDescription className="sr-only">
             QR Code untuk kegiatan {eventData.name}. Scan untuk absensi.
           </DialogDescription>

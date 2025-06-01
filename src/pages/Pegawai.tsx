@@ -8,7 +8,7 @@ import { useAppFirestore } from '@/hooks/useAppFirestore';
 import { Link } from 'react-router-dom';
 import { Search, PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Pegawai } from '@/types'; // Import Pegawai interface from types
+import { Pegawai } from '@/types';
 
 const getGradientColorClass = (id: string) => {
   const colors = [
@@ -34,14 +34,19 @@ const PegawaiPage = () => {
   const { pegawai } = useAppFirestore();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterJabatan, setFilterJabatan] = useState<string>('all');
 
-  const handleFilterChange = (value: string) => {
+  const handleFilterStatusChange = (value: string) => {
     setFilterStatus(value);
+  };
+
+  const handleFilterJabatanChange = (value: string) => {
+    setFilterJabatan(value);
   };
 
   const filteredPegawai = useMemo(() => {
     if (!Array.isArray(pegawai)) {
-      return []; // Return an empty array if pegawai is not an array
+      return [];
     }
     const sortedPegawai = [...pegawai].sort((a, b) => {
       if (a.nama && b.nama) {
@@ -54,9 +59,10 @@ const PegawaiPage = () => {
       const matchesSearch = (p.nama && p.nama.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (p.nip && p.nip.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesStatus = filterStatus === 'all' || p.status === filterStatus;
-      return matchesSearch && matchesStatus;
+      const matchesJabatan = filterJabatan === 'all' || (p.jabatan && p.jabatan.toLowerCase() === filterJabatan.toLowerCase());
+      return matchesSearch && matchesStatus && matchesJabatan;
     });
-  }, [pegawai, searchTerm, filterStatus]);
+  }, [pegawai, searchTerm, filterStatus, filterJabatan]);
 
   const getStatusVariant = (status: 'aktif' | 'pensiun' | 'cuti') => {
     switch (status) {
@@ -93,7 +99,7 @@ const PegawaiPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Select onValueChange={handleFilterChange} value={filterStatus}>
+        <Select onValueChange={handleFilterStatusChange} value={filterStatus}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter Status" />
           </SelectTrigger>
@@ -102,6 +108,27 @@ const PegawaiPage = () => {
             <SelectItem value="aktif">Aktif</SelectItem>
             <SelectItem value="pensiun">Pensiun</SelectItem>
             <SelectItem value="cuti">Cuti</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select onValueChange={handleFilterJabatanChange} value={filterJabatan}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter Jabatan" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Jabatan</SelectItem>
+            <SelectItem value="Karutan">Karutan</SelectItem>
+            <SelectItem value="Kasubsi Yantah">Kasubsi Yantah</SelectItem>
+            <SelectItem value="Ka. KPR">Ka. KPR</SelectItem>
+            <SelectItem value="Kasubsi Pengelolaan">Kasubsi Pengelolaan</SelectItem>
+            <SelectItem value="Komandan Jaga">Komandan Jaga</SelectItem>
+            <SelectItem value="Staf Yantah">Staf Yantah</SelectItem>
+            <SelectItem value="Staf Pengelolaan">Staf Pengelolaan</SelectItem>
+            <SelectItem value="Staf KPR">Staf KPR</SelectItem>
+            <SelectItem value="Petugas/Anggota Jaga">Petugas/Anggota Jaga</SelectItem>
+            <SelectItem value="Perawat Gigi">Perawat Gigi</SelectItem>
+            <SelectItem value="Bendahara">Bendahara</SelectItem>
+            <SelectItem value="Perawat Terampil">Perawat Terampil</SelectItem>
+            <SelectItem value="Penjaga Tahanan">Penjaga Tahanan</SelectItem>
           </SelectContent>
         </Select>
       </div>

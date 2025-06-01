@@ -53,7 +53,7 @@ const PegawaiDetail = () => {
         nip: currentPegawai.nip,
         nama: currentPegawai.nama,
         token: uuidv4(),
-        validUntil: Date.now() + (1000 * 60 * 60 * 24 * 365) // 1 year from now
+        validUntil: Date.now() + (1000 * 60 * 60 * 24 * 365)
       };
       
       const qrString = JSON.stringify(qrData);
@@ -62,7 +62,7 @@ const PegawaiDetail = () => {
       
       setQrCodeUrl(qrUrl);
 
-      // Update Firestore with the new QR code token and validity
+      
       await updateDoc(doc(db, "pegawai", currentPegawai.id!), {
         qrCodeToken: qrData.token,
         qrCodeValidUntil: new Date(qrData.validUntil),
@@ -104,8 +104,8 @@ const PegawaiDetail = () => {
       window.URL.revokeObjectURL(url);
       
       toast({
-        title: "Success",
-        description: "QR Code berhasil diunduh"
+        title: "Berhasil",
+        description: "QR Code berhasil diunduh."
       });
     } catch (error) {
       toast({

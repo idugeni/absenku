@@ -23,7 +23,7 @@ const Login = () => {
       toast({
         title: "Gagal Validasi",
         description: "Mohon pastikan email dan password telah terisi.",
-        variant: "destructive" // Menggunakan varian destructive dari Shadcn/ui
+        variant: "destructive"
       });
       return;
     }
@@ -78,7 +78,7 @@ const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="admin@example.com"
                     required
-                    // Styling Input menggunakan warna semantik
+                    
                     className="pl-10 bg-input-bg border-input-border text-card-foreground placeholder:text-input-placeholder focus:border-input-focus-border focus:ring-1 focus:ring-ring transition-all duration-300 rounded-md" 
                   />
                 </div>
@@ -103,7 +103,7 @@ const Login = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold py-3 text-base rounded-md transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-ring/50
-                           disabled:bg-muted disabled:text-muted-foreground disabled:border-slate-600 disabled:cursor-not-allowed" // Disabled button styles
+                           disabled:bg-muted disabled:text-muted-foreground disabled:border-slate-600 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? (

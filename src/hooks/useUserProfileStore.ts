@@ -1,4 +1,3 @@
-// src/hooks/useUserProfileStore.ts
 import { doc, updateDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from '@/components/ui/use-toast';
@@ -10,7 +9,6 @@ export interface UseUserProfileStoreReturn {
     userId: string,
     profileData: Partial<UserProfile>
   ) => Promise<void>;
-  // getUserProfile dapat ditambahkan di sini jika perlu mengambil data profil
 }
 
 export const useUserProfileStore = (): UseUserProfileStoreReturn => {
@@ -21,11 +19,10 @@ export const useUserProfileStore = (): UseUserProfileStoreReturn => {
     profileData: Partial<UserProfile>
   ) => {
     try {
-      // Asumsi UserProfile disimpan di koleksi 'users' dengan ID dokumen = userId
       const userDocRef = doc(db, "users", userId);
       const dataToUpdate = convertDatesToTimestamps({
         ...profileData,
-        updatedAt: new Date(), // Selalu update timestamp updatedAt
+        updatedAt: new Date(),
       });
       await updateDoc(userDocRef, dataToUpdate);
       toast({ title: "Berhasil", description: "Profil pengguna diperbarui." });

@@ -14,7 +14,7 @@ export interface UserProfile {
   uid: string;
   email: string;
   displayName?: string;
-  name?: string; // Add name as an alias for displayName
+  name?: string;
   photoURL?: string;
   phoneNumber?: string;
   createdAt: Date;

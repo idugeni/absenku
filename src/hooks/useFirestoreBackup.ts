@@ -1,4 +1,3 @@
-// src/hooks/useFirestoreBackup.ts
 import {
     collection,
     getDocs,
@@ -7,12 +6,12 @@ import {
     query,
     DocumentData,
   } from "firebase/firestore";
-  import { db } from "@/lib/firebase"; // Sesuaikan path jika perlu
+  import { db } from "@/lib/firebase";
   import { useToast } from '@/components/ui/use-toast';
   import {
     convertDatesToTimestamps,
     convertTimestampsToDates,
-  } from "@/utils/firebaseDateUtils"; // Sesuaikan path jika perlu
+  } from "@/utils/firebaseDateUtils";
   
   export interface UseFirestoreBackupReturn {
     exportCollectionToJson: (collectionName: string) => Promise<DocumentData[]>;

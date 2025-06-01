@@ -1,7 +1,10 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 
+import { useToast } from '@/components/ui/use-toast';
+
 interface Props {
   children?: ReactNode;
+  toast: ReturnType<typeof useToast>['toast'];
 }
 
 interface State {
@@ -14,18 +17,15 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(_: Error): State {
-    // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
-    // You can also log the error to an error reporting service
+    this.props.toast({ title: "Error", description: "Terjadi kesalahan yang tidak terduga.", variant: "destructive" });
   }
 
   public render() {
     if (this.state.hasError) {
-      // You can render any custom fallback UI
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800 p-4">
           <h1 className="text-4xl font-bold mb-4">Oops! Terjadi Kesalahan.</h1>
@@ -44,4 +44,9 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default ErrorBoundary;
+const ErrorBoundaryWrapper = ({ children }: { children?: ReactNode }) => {
+  const { toast } = useToast();
+  return <ErrorBoundary toast={toast}>{children}</ErrorBoundary>;
+};
+
+export default ErrorBoundaryWrapper;

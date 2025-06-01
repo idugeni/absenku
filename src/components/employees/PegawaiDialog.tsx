@@ -15,15 +15,15 @@ interface PegawaiFormState {
   jabatan: string;
   status: 'aktif' | 'pensiun' | 'cuti';
   photoUrl: string;
-  phoneNumber: string; // Add phoneNumber property
-  tanggalBergabung?: Date; // Make it optional and a Date object
+  phoneNumber: string;
+  tanggalBergabung?: Date;
 }
 
 interface PegawaiDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pegawai?: Pegawai | null;
-  onSaveSuccess?: () => void; // Add this line
+  onSaveSuccess?: () => void;
 }
 
 const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDialogProps) => {
@@ -35,7 +35,7 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
     email: '',
     status: 'aktif' as 'aktif' | 'pensiun' | 'cuti',
     photoUrl: '',
-    phoneNumber: '', // Initialize phoneNumber
+    phoneNumber: '',
   });
 
   useEffect(() => {
@@ -46,9 +46,9 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
         email: pegawai.email,
         jabatan: pegawai.jabatan,
         status: pegawai.status,
-        tanggalBergabung: pegawai.tanggalBergabung, // Assign the Date object directly
+        tanggalBergabung: pegawai.tanggalBergabung,
         photoUrl: pegawai.photoUrl || '',
-        phoneNumber: pegawai.phoneNumber || '', // Assign phoneNumber
+        phoneNumber: pegawai.phoneNumber || ''
       });
     } else {
       setFormData({
@@ -58,7 +58,7 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
         jabatan: '',
         status: 'aktif',
         photoUrl: '',
-        phoneNumber: '', // Initialize phoneNumber
+        phoneNumber: '',
       });
     }
   }, [pegawai, open, setFormData]);

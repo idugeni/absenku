@@ -6,17 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'; // Menambahkan CardDescription
-import { ArrowLeft, Loader2 } from 'lucide-react'; // Menambahkan Loader2 untuk indikator loading
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
 const PegawaiEdit = () => {
-  // Hooks untuk navigasi, parameter URL, dan fungsionalitas Firestore
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { pegawai, updatePegawai } = useAppFirestore();
   const { toast } = useToast();
 
-  // State untuk menyimpan data form
   const [nama, setNama] = useState('');
   const [nip, setNip] = useState('');
   const [email, setEmail] = useState('');
@@ -24,11 +22,9 @@ const PegawaiEdit = () => {
   const [jabatan, setJabatan] = useState('');
   const [status, setStatus] = useState<'aktif' | 'pensiun' | 'cuti'>('aktif');
 
-  // State untuk menangani status loading dan submit
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Callback untuk memuat data pegawai saat komponen dimuat atau 'id' berubah
   const loadPegawaiData = useCallback(() => {
     if (!id) {
       toast({
@@ -59,15 +55,7 @@ const PegawaiEdit = () => {
       }
       setIsLoading(false);
     } else {
-      // Jika data pegawai belum dimuat ke dalam 'useAppFirestore'
-      // Ini bisa terjadi jika halaman di-refresh langsung ke URL edit
-      // Dalam kasus produksi, Anda mungkin perlu memicu fetching data pegawai di sini
-      // atau memastikan data sudah tersedia sebelum navigasi ke halaman edit.
-      // Untuk tujuan demo ini, kita asumsikan 'pegawai' akan segera tersedia
-      // atau pengguna akan diarahkan kembali jika tidak ada.
-      setIsLoading(false); // Asumsi jika data kosong, mungkin memang tidak ada atau belum dimuat.
-                           // Perlu strategi fetching yang lebih robust di 'useAppFirestore'
-                           // atau penanganan di useEffect jika 'pegawai' kosong.
+      setIsLoading(false);
     }
   }, [id, pegawai, navigate, toast]);
 
@@ -75,12 +63,10 @@ const PegawaiEdit = () => {
     loadPegawaiData();
   }, [loadPegawaiData]);
 
-  // Fungsi untuk menangani pengiriman form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validasi dasar form
     if (!nama || !nip || !email || !jabatan || !status) {
       toast({
         title: "Validasi Gagal",
@@ -113,21 +99,27 @@ const PegawaiEdit = () => {
       toast({
         title: "Sukses",
         description: "Data pegawai berhasil diperbarui.",
-        // Anda bisa menambahkan 'action' ke toast jika ingin ada tombol 'Lihat Detail' atau semacamnya
       });
-      navigate(`/pegawai/${id}`); // Arahkan kembali ke halaman detail pegawai
+      navigate(`/pegawai/${id}`);
     } catch (error) {
-      toast({
-        title: "Gagal Memperbarui",
-        description: `Terjadi kesalahan saat memperbarui data: ${error.message}`,
-        variant: "destructive",
-      });
+      if (error instanceof Error) {
+        toast({
+          title: "Gagal Memperbarui",
+          description: `Terjadi kesalahan saat memperbarui data: ${error.message}`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Gagal Memperbarui",
+          description: "Terjadi kesalahan yang tidak diketahui saat memperbarui data.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Tampilan saat data sedang dimuat
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
@@ -153,7 +145,6 @@ const PegawaiEdit = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Bagian Grid untuk input utama */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="nama">Nama Lengkap</Label>
@@ -190,7 +181,7 @@ const PegawaiEdit = () => {
                 <Label htmlFor="phoneNumber">Nomor Telepon/WhatsApp</Label>
                 <Input
                   id="phoneNumber"
-                  type="tel" // Menggunakan type="tel" untuk input telepon
+                  type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="Contoh: 08123456789"

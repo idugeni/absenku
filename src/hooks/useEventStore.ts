@@ -1,4 +1,3 @@
-// src/hooks/useEventStore.ts
 import { useState, useEffect, useCallback } from "react";
 import {
   collection,
@@ -88,9 +87,9 @@ export const useEventStore = (): UseEventStoreReturn => {
         const now = new Date();
         data.forEach(event => {
 
-          // Check if event end date is in the past and status is not already completed or cancelled
+          
           if (event.endDate instanceof Date && event.endDate < now && event.status !== 'completed' && event.status !== 'cancelled') {
-            // Automatically update status to completed
+            
             if (event.id) {
               updateEvent(event.id, { status: 'completed' });
             }
@@ -116,9 +115,9 @@ export const useEventStore = (): UseEventStoreReturn => {
   ) => {
     try {
       const now = new Date();
-      const token = uuidv4(); // Generate a unique token for the QR code
+      const token = uuidv4();
 
-      // Prepare initial data without the 'id' and QR code related fields
+      
       const initialDataToSave = convertDatesToTimestamps({
         ...eventInput,
         qrCodeToken: token,
@@ -126,20 +125,20 @@ export const useEventStore = (): UseEventStoreReturn => {
         updatedAt: now,
       });
 
-      // Add the document to get its Firestore-generated ID
+      
       const docRef = await addDoc(collection(db, collectionName), initialDataToSave);
       const firestoreDocId = docRef.id;
 
-      // Calculate QR code validity (e.g., 1 hour from now)
-      const qrCodeValidityDuration = 60 * 60 * 1000; // 1 hour in milliseconds
+      
+      const qrCodeValidityDuration = 60 * 60 * 1000;
       const qrCodeValidUntil = new Date(now.getTime() + qrCodeValidityDuration);
 
-      // Generate QR code using the Firestore document ID and the token
+      
       const qrCodeBase64 = await generateEventQRCode({ eventId: firestoreDocId, token });
 
-      // Update the document with the Firestore ID and QR code details
+      
       await updateDoc(doc(db, collectionName, firestoreDocId), {
-        id: firestoreDocId, // Assign the Firestore-generated ID to the 'id' field
+        id: firestoreDocId,
         qrCode: qrCodeBase64,
         qrCodeValidUntil: qrCodeValidUntil,
       });
@@ -171,11 +170,11 @@ export const useEventStore = (): UseEventStoreReturn => {
         return;
       }
 
-      // Assuming there's only one document with this internal ID
+      
       const docToDelete = querySnapshot.docs[0];
       const firestoreDocId = docToDelete.id;
 
-      // Delete all related attendance records
+      
       const attendanceCollectionRef = collection(db, 'attendance');
       const attendanceQuery = query(attendanceCollectionRef, where('eventId', '==', eventId));
       const attendanceSnapshot = await getDocs(attendanceQuery);

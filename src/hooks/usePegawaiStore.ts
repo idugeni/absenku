@@ -1,4 +1,3 @@
-// src/hooks/usePegawaiStore.ts
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -53,7 +52,7 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
         setPegawaiLoading(false);
       },
       (error) => {
-        console.error(`Error fetching ${collectionName}:`, error);
+
         toast({
           title: "Error",
           description: `Error fetching ${collectionName}: ${error.message}`,
@@ -70,7 +69,6 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
   ) => {
     try {
       const now = new Date();
-      // Generate document ID from name: lowercase and replace spaces with hyphens
       const docId = pegawaiInput.nama.toLowerCase().replace(/\s+/g, '-');
 
       const dataToSave = convertDatesToTimestamps({
@@ -79,7 +77,6 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
         updatedAt: now,
       });
 
-      // Use setDoc with the generated ID instead of addDoc
       const docRef = doc(db, collectionName, docId);
       await setDoc(docRef, dataToSave);
 
@@ -97,7 +94,7 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
       toast({ title: "Berhasil", description: "Pegawai ditambahkan." });
       return docRef.id;
     } catch (error) {
-      console.error(`Error adding ${collectionName}:`, error);
+  
       toast({
         title: "Error",
         description: `Error adding ${collectionName}: ${error.message}`,
@@ -118,7 +115,7 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
       await updateDoc(doc(db, collectionName, id), dataToUpdate);
       toast({ title: "Berhasil", description: "Pegawai diperbarui." });
     } catch (error) {
-      console.error(`Error updating ${collectionName}:`, error);
+  
       toast({
         title: "Error",
         description: `Error updating ${collectionName}: ${error.message}`,
@@ -132,7 +129,7 @@ export const usePegawaiStore = (): UsePegawaiStoreReturn => {
       await deleteDoc(doc(db, collectionName, id));
       toast({ title: "Berhasil", description: "Pegawai dihapus." });
     } catch (error) {
-      console.error(`Error deleting ${collectionName}:`, error);
+  
       toast({
         title: "Error",
         description: `Error deleting ${collectionName}: ${error.message}`,

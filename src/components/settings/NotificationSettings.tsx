@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
-import { Bell, Mail, Smartphone, MessageSquare, Save } from 'lucide-react'; // Import additional icons
+import { Bell, Mail, Smartphone, MessageSquare, Save } from 'lucide-react';
 
 interface NotificationSettingsProps {
   loading: boolean;
@@ -41,7 +41,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ loading, se
         });
       }
     } catch (error) {
-      console.error("Gagal menyimpan pengaturan notifikasi:", error);
+
       toast({
         title: "Error",
         description: "Gagal menyimpan pengaturan notifikasi. Silakan coba lagi.",
