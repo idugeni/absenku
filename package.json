@@ -9,10 +9,9 @@
     "node": "18.x"
   },
   "scripts": {
-    "clean": "rm -rf dist",
-    "clean:win": "rd /s /q dist",
+    "clean": "rimraf dist",
     "dev": "vite",
-    "build": "npm run clean:win && vite build",
+    "build": "npm run clean && vite build",
     "build:dev": "npm run clean && vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
