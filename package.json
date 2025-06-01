@@ -9,7 +9,7 @@
     "node": "18.x"
   },
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "npx rimraf dist",  
     "dev": "vite",
     "build": "npm run clean && vite build",
     "build:dev": "npm run clean && vite build --mode development",
