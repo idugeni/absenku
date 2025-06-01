@@ -18,6 +18,7 @@ import PegawaiEdit from '@/pages/PegawaiEdit';
 import NotFound from '@/pages/NotFound';
 import PegawaiPage from '@/pages/Pegawai';
 import Events from '@/pages/Events';
+import EventDetail from '@/pages/EventDetail';
 import Absensi from '@/pages/Absensi';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
                 <Route path="/pegawai/edit/:id" element={<PegawaiEdit />} />
                 <Route path="/pegawai/:id" element={<PegawaiDetail />} />
                 <Route path="/events" element={<Events />} />
+                <Route path="/events/:id" element={<EventDetail />} />
               </Route>
               
               <Route path="*" element={<NotFound />} />

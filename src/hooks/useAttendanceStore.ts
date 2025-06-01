@@ -18,7 +18,9 @@ export interface UseAttendanceStoreReturn {
   attendance: Attendance[];
   attendanceLoading: boolean;
   addAttendance: (
-    attendanceData: Omit<Attendance, "id" | "createdAt" | "status">
+    attendanceData: Omit<Attendance, "id" | "createdAt" | "status">,
+    eventStartTime: Date,
+    employeeName: string
   ) => Promise<string | undefined>;
   updateAttendance: (id: string, attendanceData: Partial<Attendance>) => Promise<void>;
 }
@@ -57,14 +59,15 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
   }, [toast]);
 
   const addAttendance = async (
-    attendanceInput: Omit<Attendance, "id" | "createdAt" | "status"> & { event: Event }
+    attendanceInput: Omit<Attendance, "id" | "createdAt" | "status">,
+    eventStartTime: Date,
+    employeeName: string
   ) => {
     try {
       const checkInTime = new Date();
-      const eventStartTime = attendanceInput.event.startDate;
+      const now = new Date();
 
       let status: 'present' | 'late' | 'absent' = 'present';
-      const now = new Date();
 
       if (checkInTime > eventStartTime && now >= eventStartTime) {
         status = 'late';
@@ -76,7 +79,7 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
 
       const dataToSave = convertDatesToTimestamps({
         ...attendanceInput,
-        eventId: attendanceInput.event.id,
+        employeeName: employeeName,
         checkInTime,
         status,
         createdAt: new Date(),

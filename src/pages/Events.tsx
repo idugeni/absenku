@@ -1,11 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
 import { useEventStore } from '@/hooks/useEventStore';
-import { EventDialog } from '@/components/events/EventDialog';
-import { Event } from '@/types';
-import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
-import { QrCode, PlusCircle, Calendar, MapPin, Edit, Trash2, Clock, Info } from 'lucide-react';
-import QRCodeGenerator from '@/components/qr/QRCodeGenerator';
+import { Calendar, Clock, Info, MapPin } from 'lucide-react';
+import { format, isBefore, isAfter, isEqual } from 'date-fns';
+import { id } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -15,19 +13,6 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { format, isBefore, isAfter, isEqual } from 'date-fns';
-import { id } from 'date-fns/locale';
 
 const getEventStatus = (startDate: Date, endDate: Date): 'upcoming' | 'ongoing' | 'completed' => {
   const now = new Date();
@@ -43,66 +28,7 @@ const getEventStatus = (startDate: Date, endDate: Date): 'upcoming' | 'ongoing' 
 
 const Events = () => {
   const { events, deleteEvent, eventsLoading, updateEvent } = useEventStore();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isQrCodeDialogOpen, setIsQrCodeDialogOpen] = useState(false);
-  const { toast } = useToast();
-
-  const handleAddEvent = useCallback(() => {
-    setSelectedEvent(null);
-    setIsDialogOpen(true);
-  }, []);
-
-  const handleEditEvent = useCallback((event: Event) => {
-    setSelectedEvent(event);
-    setIsDialogOpen(true);
-  }, []);
-
-  const handleShowQrCode = useCallback((event: Event) => {
-    setSelectedEvent(event);
-    setIsQrCodeDialogOpen(true);
-  }, []);
-
-  const handleDeleteEvent = useCallback(async (eventId: string) => {
-    try {
-      await deleteEvent(eventId);
-      toast({
-        title: "Berhasil!",
-        description: "Kegiatan berhasil dihapus.",
-        variant: "success",
-      });
-    } catch (error) {
-      let errorMessage = "Terjadi kesalahan saat menghapus kegiatan.";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      toast({
-        title: "Gagal menghapus kegiatan",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  }, [deleteEvent, toast]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      events.forEach(event => {
-        const currentStatus = getEventStatus(new Date(event.startDate), new Date(event.endDate));
-        if (event.status !== currentStatus && event.id) {
-          updateEvent(event.id, { status: currentStatus });
-        }
-      });
-    }, 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [events, updateEvent]);
-
-  const handleDialogClose = useCallback(() => {
-    setIsDialogOpen(false);
-    setSelectedEvent(null);
-  }, []);
+  const navigate = useNavigate();
 
   const EventCardSkeleton = () => (
     <div className="grid grid-cols-1 gap-6">
@@ -139,9 +65,7 @@ const Events = () => {
               Kelola semua kegiatan atau acara yang terdaftar di sini.
             </CardDescription>
           </div>
-          <Button onClick={handleAddEvent} className="w-full sm:w-auto h-10 px-4 py-2">
-            <PlusCircle className="mr-2 h-4 w-4" /> Tambah Kegiatan Baru
-          </Button>
+
         </CardHeader>
         <CardContent>
           {eventsLoading ? (
@@ -151,9 +75,7 @@ const Events = () => {
               <Info className="h-10 w-10 mb-4 text-gray-400" />
               <p className="text-lg font-semibold">Tidak ada kegiatan yang ditemukan.</p>
               <p className="text-sm mt-2">Mulai dengan menambahkan kegiatan baru untuk melihatnya di sini.</p>
-              <Button onClick={handleAddEvent} className="mt-6">
-                <PlusCircle className="mr-2 h-4 w-4" /> Buat Kegiatan Pertama
-              </Button>
+
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 mt-6">
@@ -212,46 +134,12 @@ const Events = () => {
                   <CardFooter className="flex flex-col sm:flex-row w-full gap-4 pt-4 sm:justify-center">
                     <Button
                       variant="outline"
-                      onClick={() => handleEditEvent(event)}
+                      onClick={() => navigate(`/events/${event.id}`)}
                       className="flex items-center gap-2 w-full sm:w-auto"
                     >
-                      <Edit className="h-4 w-4" />
-                      Edit Kegiatan
+                      <Info className="h-4 w-4" />
+                      Lihat Detail
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleShowQrCode(event)}
-                      className="flex items-center gap-2 w-full sm:w-auto"
-                    >
-                      <QrCode className="h-4 w-4" />
-                      Tampilkan QR
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          className="flex items-center gap-2 w-full sm:w-auto"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Hapus Kegiatan
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tindakan ini tidak bisa dibatalkan. Ini akan menghapus kegiatan "
-                            <span className="font-semibold text-gray-900">{event.name}</span>" secara permanen dari daftar Anda.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Batal</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteEvent(event.id)}>
-                            Hapus
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
                   </CardFooter>
                 </Card>
               ))}
@@ -260,19 +148,7 @@ const Events = () => {
         </CardContent>
       </Card>
 
-      <EventDialog
-        open={isDialogOpen}
-        onOpenChange={handleDialogClose}
-        event={selectedEvent}
-      />
 
-      {selectedEvent && (
-        <QRCodeGenerator
-          open={isQrCodeDialogOpen}
-          onOpenChange={setIsQrCodeDialogOpen}
-          eventData={selectedEvent}
-        />
-      )}
     </div>
   );
 };

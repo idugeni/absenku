@@ -56,6 +56,8 @@ export interface Attendance {
   id?: string;
   eventId: string;
   pegawaiId: string;
+  employeeName: string;
+  nip: string;
   status: 'present' | 'late' | 'absent';
   checkInTime?: Date;
   checkOutTime?: Date;
