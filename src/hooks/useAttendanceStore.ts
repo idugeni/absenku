@@ -64,8 +64,14 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
       const eventStartTime = attendanceInput.event.startDate;
 
       let status: 'present' | 'late' | 'absent' = 'present';
-      if (checkInTime > eventStartTime) {
+      const now = new Date();
+
+      if (checkInTime > eventStartTime && now >= eventStartTime) {
         status = 'late';
+      } else if (checkInTime <= eventStartTime && now >= eventStartTime) {
+        status = 'present';
+      } else if (checkInTime < eventStartTime && now < eventStartTime) {
+        status = 'present';
       }
 
       const dataToSave = convertDatesToTimestamps({
