@@ -6,6 +6,7 @@ import { useInactivityLogout } from '@/hooks/useInactivityLogout';
 import { AuthContextType } from '@/contexts/AuthContextDefinition';
 import { Toaster } from '@/components/ui/toaster';
 import ProtectedRoute from '@/components/auth/ProtectedRoute'; // Import ProtectedRoute
+import ErrorBoundary from '@/components/layout/ErrorBoundary'; // Import ErrorBoundary
 import Login from '@/pages/Login';
 import MainLayout from '@/layouts/MainLayout';
 import Index from '@/pages/Index';
@@ -24,32 +25,34 @@ function App() {
   const { currentUser, loading } = useAuth() as AuthContextType;
   useInactivityLogout();
   return (
-    <AuthProvider>
-      <Router>
-        {/* <AuthStatusChecker /> */}
-        <div className="min-h-screen bg-gray-50">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/absensi/validate" element={<Absensi />} />
-            <Route path="/thank-you" element={<ThankYou />} />
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Index />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/pegawai" element={<PegawaiPage />} />
-              <Route path="/pegawai/new" element={<PegawaiNew />} />
-              <Route path="/pegawai/edit/:id" element={<PegawaiEdit />} />
-              <Route path="/pegawai/:id" element={<PegawaiDetail />} />
-              <Route path="/events" element={<Events />} />
-            </Route>
-            {/* End Protected Routes */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-        </div>
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          {/* <AuthStatusChecker /> */}
+          <div className="min-h-screen bg-gray-50">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/absensi/validate" element={<Absensi />} />
+              <Route path="/thank-you" element={<ThankYou />} />
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                <Route path="/" element={<Index />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/pegawai" element={<PegawaiPage />} />
+                <Route path="/pegawai/new" element={<PegawaiNew />} />
+                <Route path="/pegawai/edit/:id" element={<PegawaiEdit />} />
+                <Route path="/pegawai/:id" element={<PegawaiDetail />} />
+                <Route path="/events" element={<Events />} />
+              </Route>
+              {/* End Protected Routes */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

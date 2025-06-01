@@ -43,7 +43,14 @@ const PegawaiPage = () => {
     if (!Array.isArray(pegawai)) {
       return []; // Return an empty array if pegawai is not an array
     }
-    return pegawai.filter(p => {
+    const sortedPegawai = [...pegawai].sort((a, b) => {
+      if (a.nama && b.nama) {
+        return a.nama.localeCompare(b.nama);
+      }
+      return 0;
+    });
+
+    return sortedPegawai.filter(p => {
       const matchesSearch = (p.nama && p.nama.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (p.nip && p.nip.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesStatus = filterStatus === 'all' || p.status === filterStatus;
