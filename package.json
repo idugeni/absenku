@@ -1,12 +1,12 @@
 {
   "name": "absenku",
   "private": true,
-  "version": "1.0.0-beta.1",
+  "version": "1.4.0-beta.2",
   "author": "Eliyanto Sarage <officialelsa21@gmail.com>",
-  "license": "MIT",
+  "license": "ISC",
   "type": "module",
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "scripts": {
     "clean": "npx rimraf dist",  
