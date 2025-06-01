@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose, SheetDescription, SheetHeader } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu, ChevronLeft, LogOut, Search, Bell } from 'lucide-react';
 import { NavLinkItem } from '@/components/navigation/NavLinkItem';
@@ -38,7 +38,12 @@ const Header: React.FC<HeaderProps> = ({
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-full max-w-[280px] py-6">
-          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+          <SheetHeader>
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <SheetDescription className="sr-only">
+              This is the main navigation menu for the application.
+            </SheetDescription>
+          </SheetHeader>
           <TooltipProvider>
             <nav className="grid gap-2 text-lg font-medium px-4">
               <AppLogo className="mb-6" />

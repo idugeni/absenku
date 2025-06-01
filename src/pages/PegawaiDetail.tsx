@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ArrowLeft, QrCode, Edit, Calendar, MapPin, Clock, Download } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
+import { doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -49,7 +52,8 @@ const PegawaiDetail = () => {
         pegawaiId: currentPegawai.id,
         nip: currentPegawai.nip,
         nama: currentPegawai.nama,
-        timestamp: Date.now()
+        token: uuidv4(),
+        validUntil: Date.now() + (1000 * 60 * 60 * 24 * 365) // 1 year from now
       };
       
       const qrString = JSON.stringify(qrData);
@@ -57,6 +61,13 @@ const PegawaiDetail = () => {
       const qrUrl = `https://quickchart.io/qr?text=${encodedData}&size=300&format=png`;
       
       setQrCodeUrl(qrUrl);
+
+      // Update Firestore with the new QR code token and validity
+      await updateDoc(doc(db, "pegawai", currentPegawai.id!), {
+        qrCodeToken: qrData.token,
+        qrCodeValidUntil: new Date(qrData.validUntil),
+        updatedAt: Timestamp.fromDate(new Date()),
+      });
       
 
     } catch (error) {
@@ -204,6 +215,14 @@ const PegawaiDetail = () => {
                                     <div className="text-gray-700 dark:text-gray-300">:</div>
                                     <div className="ml-2 break-all text-gray-800 dark:text-gray-200 md:whitespace-normal">{currentPegawai.email}</div>
                                 </div>
+
+                                {currentPegawai.phoneNumber && (
+                                    <div className="flex items-center">
+                                        <div className="w-24 font-semibold text-gray-700 dark:text-gray-300">Telepon</div>
+                                        <div className="text-gray-700 dark:text-gray-300">:</div>
+                                        <div className="ml-2 break-all text-gray-800 dark:text-gray-200 md:whitespace-normal">{currentPegawai.phoneNumber}</div>
+                                    </div>
+                                )}
 
                                 <div className="flex items-center">
                                     <div className="w-24 font-semibold text-gray-700 dark:text-gray-300">Status</div>

@@ -9,12 +9,11 @@ import Footer from '@/components/layout/Footer';
 import { AppLogo } from '@/components/branding/AppLogo';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { NavLinkItem } from '@/components/navigation/NavLinkItem';
-
-// interface MainLayoutProps {
-//   // children: React.ReactNode; // Remove this line
-// }
+import { useAuth } from '@/contexts/useAuth';
+import { AuthContextType } from '@/contexts/AuthContextDefinition';
 
 const MainLayout: React.FC = () => {
+  const { loading } = useAuth() as AuthContextType;
   const [isCollapsed, setIsCollapsed] = React.useState(
     localStorage.getItem('sidebarCollapsed') === 'true'
   );
@@ -42,6 +41,11 @@ const MainLayout: React.FC = () => {
 
   return (
     <TooltipProvider>
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      )}
       <div className="flex min-h-screen w-full bg-muted/40">
         <aside
           className={cn(

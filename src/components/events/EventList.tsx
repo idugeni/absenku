@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle as UIDialogTitle } from '@/components/ui/dialog'; // Rename DialogTitle untuk menghindari konflik
+import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle as UIDialogTitle } from '@/components/ui/dialog';
 import { Calendar, MapPin, Users, QrCode, Edit, Trash2, CalendarPlus, Eye } from 'lucide-react';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
 import EventDialog from '@/components/events/EventDialog';
@@ -15,7 +15,6 @@ interface EventListProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-// --- Fungsi Helper --- (Bisa juga diekstraksi ke file utils jika digunakan di banyak tempat)
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'ongoing':
@@ -31,19 +30,18 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-const formatDateTime = (date: Date | string) => { // Menerima string juga untuk fleksibilitas
+const formatDateTime = (date: Date | string) => {
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toLocaleString('id-ID', {
     day: '2-digit',
-    month: 'long', // Menggunakan nama bulan panjang
+    month: 'long',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false, // Menggunakan format 24 jam
+    hour12: false,
   });
 };
 
-// --- Komponen EventItemCard ---
 interface EventItemCardProps {
   event: Event;
   viewMode: 'dashboard' | 'dialog';
@@ -61,22 +59,19 @@ const EventItemCard = ({
   onShowQR,
   onShowDetail,
 }: EventItemCardProps) => {
-  const cardBaseClasses = "p-5 rounded-lg border transition-all duration-300 ease-in-out"; // Padding disesuaikan
+  const cardBaseClasses = "p-5 rounded-lg border transition-all duration-300 ease-in-out";
   const dashboardCardClasses = `${cardBaseClasses} border-gray-200 hover:border-primary/70 hover:shadow-xl bg-card transform hover:-translate-y-1`;
   const dialogCardClasses = `${cardBaseClasses} border-border hover:border-primary/50 hover:shadow-md rounded-xl bg-card`;
 
-  // Menggunakan warna semantik dari diskusi sebelumnya jika memungkinkan
-  const primaryColor = viewMode === 'dashboard' ? 'indigo' : 'blue'; // Contoh penyesuaian warna
+  const primaryColor = viewMode === 'dashboard' ? 'indigo' : 'blue';
   const textPrimaryColor = viewMode === 'dashboard' ? 'text-gray-800' : 'text-foreground';
   const textSecondaryColor = viewMode === 'dashboard' ? 'text-gray-600' : 'text-muted-foreground';
   const iconPrimaryColor = viewMode === 'dashboard' ? `text-${primaryColor}-500` : 'text-primary';
 
-
   return (
     <div className={viewMode === 'dashboard' ? dashboardCardClasses : dialogCardClasses}>
-      {/* Bagian Informasi Utama */}
       <div className="flex justify-between items-start mb-3">
-        <div className="flex-1 min-w-0 pr-3"> {/* min-w-0 untuk text ellipsis jika nama panjang */}
+        <div className="flex-1 min-w-0 pr-3">
           <h3 className={`font-semibold truncate ${viewMode === 'dashboard' ? 'text-xl' : 'text-lg'} ${textPrimaryColor} mb-1`}>
             {event.name}
           </h3>
@@ -107,7 +102,6 @@ const EventItemCard = ({
         </div>
       </div>
 
-      {/* Detail Tambahan (Tanggal, Lokasi untuk dialog, dll.) */}
       {viewMode === 'dashboard' ? (
         <div className={`text-sm mb-4 border-t border-border pt-3 mt-3`}>
           <div className="flex items-center space-x-2">
@@ -115,7 +109,7 @@ const EventItemCard = ({
             <span className={textPrimaryColor}>{formatDateTime(event.startDate)}</span>
           </div>
         </div>
-      ) : ( // Dialog View
+      ) : (
         <div className={`grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm ${textSecondaryColor} mb-4 pt-3 mt-3 border-t border-border`}>
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -132,7 +126,6 @@ const EventItemCard = ({
         </div>
       )}
       
-      {/* Info Pegawai & Tombol Aksi Umum */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center space-x-2 text-sm">
           <Users className={`h-5 w-5 ${iconPrimaryColor} flex-shrink-0`} />
@@ -162,7 +155,6 @@ const EventItemCard = ({
   );
 };
 
-
 const EventList = ({ open, onOpenChange }: EventListProps) => {
   const { events, deleteEvent } = useAppFirestore();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -186,7 +178,6 @@ const EventList = ({ open, onOpenChange }: EventListProps) => {
   };
 
   const handleDelete = async (id: string) => {
-    // Ganti confirm() dengan dialog konfirmasi kustom jika menggunakan komponen UI
     if (window.confirm('Apakah Anda yakin ingin menghapus kegiatan ini? Proses ini tidak dapat diurungkan.')) {
       await deleteEvent(id);
     }
@@ -203,7 +194,6 @@ const EventList = ({ open, onOpenChange }: EventListProps) => {
   return (
     <>
       {open === undefined ? (
-        // --- Dashboard Card View ---
         <Card className="border-border shadow-lg rounded-xl bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-xl sm:text-2xl font-bold text-foreground">
@@ -212,11 +202,11 @@ const EventList = ({ open, onOpenChange }: EventListProps) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {(() => { // IIFE untuk filter dan map
+              {(() => {
                 const todayEvents = events.filter(event => {
                   const today = new Date();
                   const eventDate = new Date(event.startDate);
-                  return eventDate.toDateString() === today.toDateString() && event.status !== 'cancelled'; // Tambah filter status
+                  return eventDate.toDateString() === today.toDateString() && event.status !== 'cancelled';
                 });
 
                 if (todayEvents.length === 0) {
@@ -236,9 +226,8 @@ const EventList = ({ open, onOpenChange }: EventListProps) => {
           </CardContent>
         </Card>
       ) : (
-        // --- Dialog View for Full Event Management ---
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 bg-background"> {/* Lebar dialog & p-0 */}
+          <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 bg-background">
             <DialogHeader className="px-6 pt-5 pb-4 border-b border-border sticky top-0 bg-background z-10">
               <UIDialogTitle className="flex items-center justify-between text-xl font-semibold text-foreground">
                 Manajemen Kegiatan
@@ -247,15 +236,19 @@ const EventList = ({ open, onOpenChange }: EventListProps) => {
                     setSelectedEvent(null);
                     setEditDialogOpen(true);
                   }}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground" // Menggunakan warna semantik
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="sm"
                 >
                   <CalendarPlus className="h-4 w-4 mr-2" />
                   Buat Kegiatan
                 </Button>
               </UIDialogTitle>
+              {/* Perbaikan: Menambahkan DialogDescription untuk dialog Manajemen Kegiatan */}
+              <DialogDescription className="sr-only">
+                Halaman ini memungkinkan Anda untuk mengelola semua kegiatan yang terdaftar, termasuk membuat, mengedit, melihat detail, dan menghapus kegiatan.
+              </DialogDescription>
             </DialogHeader>
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5"> {/* Konten scrollable */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
               {events.length === 0 ? (
                 renderNoEventsMessage("Belum ada kegiatan", "Mulai dengan membuat kegiatan pertama Anda.")
               ) : (
@@ -276,22 +269,36 @@ const EventList = ({ open, onOpenChange }: EventListProps) => {
         </Dialog>
       )}
 
-      {/* --- Dialog Modals (Rendered once) --- */}
       <EventDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         event={selectedEvent}
+        onSaveSuccess={() => setSelectedEvent(null)}
       />
-      <QRCodeGenerator
-        open={qrDialogOpen}
-        onOpenChange={setQrDialogOpen}
-        eventData={selectedEvent || undefined}
-      />
-      <EventDetail
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        event={selectedEvent}
-      />
+
+      <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <UIDialogTitle className="text-xl font-semibold">QR Code Kegiatan</UIDialogTitle>
+            <DialogDescription className="sr-only">
+              Tampilkan QR Code untuk kegiatan yang dipilih.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEvent && <QRCodeGenerator eventData={selectedEvent} open={qrDialogOpen} onOpenChange={setQrDialogOpen} />}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b sticky top-0 bg-background z-10">
+            <UIDialogTitle className="text-xl font-semibold">Detail Kegiatan</UIDialogTitle>
+            <DialogDescription className="sr-only">
+              Tampilkan detail lengkap dari kegiatan yang dipilih.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEvent && <EventDetail event={selectedEvent} open={detailDialogOpen} onOpenChange={setDetailDialogOpen} />}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

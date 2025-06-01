@@ -34,7 +34,7 @@ const Login = () => {
       await login(email, password);
       toast({
         title: "Login Berhasil!",
-        description: "Selamat datang kembali. Anda akan diarahkan.",
+        description: "Selamat datang kembali! Anda telah berhasil masuk ke sistem AbsenKu. Silakan mulai menggunakan layanan kami.",
         variant: "success",
       });
       navigate('/');
@@ -52,28 +52,16 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 selection:bg-primary/30 selection:text-primary">
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight mb-2">
-            Absen<span className="text-primary">Ku</span>
-          </h1>
-          <p className="text-lg text-muted-foreground">Sistem Manajemen Kehadiran Terpadu</p>
-        </div>
-
-        {/* Untuk efek glassmorphism pada card, Anda bisa menggunakan:
-          className="bg-card/80 border border-slate-700 shadow-2xl rounded-xl backdrop-blur-lg overflow-hidden"
-          Pastikan 'card' di config Anda mendukung alpha atau gunakan bg-opacity.
-          Untuk contoh ini, kita gunakan warna solid 'card'.
-        */}
         <Card className="bg-card border border-input shadow-2xl rounded-xl">
           <CardHeader className="text-center p-6">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4"> {/* Lingkaran dengan primary transparan */}
               <LogIn className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-2xl font-semibold text-card-foreground">
-              Login Administrator
+            <h2>Absen<span className="text-primary">Ku</span></h2>
             </CardTitle>
             <CardDescription className="text-muted-foreground text-sm pt-1">
-              Masukkan kredensial Anda.
+            Sistem Manajemen Kehadiran Terpadu
             </CardDescription>
           </CardHeader>
           
@@ -131,10 +119,6 @@ const Login = () => {
             </form>
           </CardContent>
         </Card>
-
-        <div className="text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} AbsenKu. Hak Cipta Dilindungi.</p>
-        </div>
       </div>
     </div>
   );

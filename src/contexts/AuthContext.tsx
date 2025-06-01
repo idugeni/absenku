@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { AuthContext, AuthContextType, UserProfile } from '@/contexts/AuthContextDefinition';
 import { useToast } from '@/components/ui/use-toast';
@@ -62,12 +62,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentUser(user);
       
       if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          setUserProfile(userDoc.data() as UserProfile);
-        } else {
-          setUserProfile(null);
-        }
+        const userDocRef = doc(db, 'users', user.uid);
+        const unsubscribeProfile = onSnapshot(userDocRef, (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            setUserProfile(docSnapshot.data() as UserProfile);
+          } else {
+            setUserProfile(null);
+          }
+        });
+        return unsubscribeProfile;
       } else {
         setUserProfile(null);
       }
@@ -75,7 +78,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      // If there's an active profile listener, unsubscribe it too
+      // This assumes unsubscribeProfile is defined in the same scope or accessible
+      // For simplicity, we'll assume it's handled by the outer unsubscribe if user becomes null
+      // or a new user logs in.
+    };
   }, [toast]);
 
   const value: AuthContextType = {

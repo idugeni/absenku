@@ -60,7 +60,7 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ loading, setLoading }) 
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4"> {/* Added max-width and padding for better layout */}
+    <div className="max-w-4xl mx-auto py-8 px-4"> {/* Added max-width and padding for better layout */}
       <Card className="shadow-lg border-2 border-gray-100 dark:border-gray-800"> {/* Added shadow and border for better appearance */}
         <CardHeader className="border-b pb-4"> {/* Added bottom border to header */}
           <CardTitle className="flex items-center text-2xl font-bold text-gray-800 dark:text-gray-100">

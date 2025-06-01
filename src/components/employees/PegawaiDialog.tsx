@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +14,9 @@ interface PegawaiFormState {
   email: string;
   jabatan: string;
   status: 'aktif' | 'pensiun' | 'cuti';
-  tanggalBergabung: string;
   photoUrl: string;
+  phoneNumber: string; // Add phoneNumber property
+  tanggalBergabung?: Date; // Make it optional and a Date object
 }
 
 interface PegawaiDialogProps {
@@ -33,8 +34,8 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
     jabatan: '',
     email: '',
     status: 'aktif' as 'aktif' | 'pensiun' | 'cuti',
-    tanggalBergabung: new Date().toISOString().split('T')[0], // Ensure it's a string in YYYY-MM-DD format
     photoUrl: '',
+    phoneNumber: '', // Initialize phoneNumber
   });
 
   useEffect(() => {
@@ -45,8 +46,9 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
         email: pegawai.email,
         jabatan: pegawai.jabatan,
         status: pegawai.status,
-        tanggalBergabung: pegawai.tanggalBergabung.toISOString().split('T')[0],
+        tanggalBergabung: pegawai.tanggalBergabung, // Assign the Date object directly
         photoUrl: pegawai.photoUrl || '',
+        phoneNumber: pegawai.phoneNumber || '', // Assign phoneNumber
       });
     } else {
       setFormData({
@@ -55,18 +57,18 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
         email: '',
         jabatan: '',
         status: 'aktif',
-        tanggalBergabung: new Date().toISOString().split('T')[0],
         photoUrl: '',
+        phoneNumber: '', // Initialize phoneNumber
       });
     }
-  }, [pegawai, open]);
+  }, [pegawai, open, setFormData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const pegawaiData = {
       ...formData,
-      tanggalBergabung: new Date(formData.tanggalBergabung)
+      tanggalBergabung: pegawai?.id ? formData.tanggalBergabung : new Date(),
     };
 
     if (pegawai?.id) {
@@ -88,10 +90,13 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
           <DialogTitle className="text-xl font-semibold">
             {pegawai ? 'Edit Pegawai' : 'Tambah Pegawai Baru'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {pegawai ? 'Formulir untuk mengedit data pegawai.' : 'Formulir untuk menambahkan pegawai baru.'}
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nip" className="text-sm font-medium">NIP</Label>
               <Input
@@ -129,7 +134,18 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="phoneNumber" className="text-sm font-medium">Nomor Telepon</Label>
+            <Input
+              id="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+              placeholder="+6281234567890"
+              className="h-11"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="jabatan" className="text-sm font-medium">Jabatan</Label>
               <Input
@@ -156,17 +172,7 @@ const PegawaiDialog = ({ open, onOpenChange, pegawai, onSaveSuccess }: PegawaiDi
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="tanggalBergabung" className="text-sm font-medium">Tanggal Bergabung</Label>
-            <Input
-              id="tanggalBergabung"
-              type="date"
-              value={formData.tanggalBergabung}
-              onChange={(e) => setFormData(prev => ({ ...prev, tanggalBergabung: e.target.value }))}
-              className="h-11"
-              required
-            />
-          </div>
+
 
           <div className="flex justify-end space-x-3 pt-6 border-t">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="px-6">

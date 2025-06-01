@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import {
   collection,
   addDoc,
-  // updateDoc, deleteDoc, // Jika diperlukan di masa depan
   doc,
   onSnapshot,
   query,
@@ -72,12 +71,12 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
 
       const dataToSave = convertDatesToTimestamps({
         ...attendanceInput,
+        eventId: attendanceInput.event.id, // Menambahkan eventId dari objek event
         checkInTime,
         status,
         createdAt: new Date(),
       });
       const docRef = await addDoc(collection(db, collectionName), dataToSave);
-      toast({ title: "Berhasil", description: "Absensi dicatat." });
       return docRef.id;
     } catch (error) {
       toast({

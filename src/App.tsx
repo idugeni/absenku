@@ -2,23 +2,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/contexts/useAuth';
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useInactivityLogout } from '@/hooks/useInactivityLogout';
 import { AuthContextType } from '@/contexts/AuthContextDefinition';
-
-// const AuthStatusChecker: React.FC = () => {
-//   const { currentUser, loading } = useAuth() as AuthContextType;
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     if (!loading && !currentUser) {
-//       navigate('/login');
-//     }
-//   }, [currentUser, loading, navigate]);
-
-//   return null;
-// };
-
 import { Toaster } from '@/components/ui/toaster';
 import ProtectedRoute from '@/components/auth/ProtectedRoute'; // Import ProtectedRoute
 import Login from '@/pages/Login';
@@ -26,15 +11,18 @@ import MainLayout from '@/layouts/MainLayout';
 import Index from '@/pages/Index';
 import Reports from '@/pages/Reports';
 import Settings from '@/pages/Settings';
+import ThankYou from '@/pages/ThankYou';
 import PegawaiDetail from '@/pages/PegawaiDetail';
-import PegawaiNew from './pages/PegawaiNew';
-import PegawaiEdit from './pages/PegawaiEdit';
-import ValidateQR from './pages/ValidateQR';
+import PegawaiNew from '@/pages/PegawaiNew';
+import PegawaiEdit from '@/pages/PegawaiEdit';
 import NotFound from '@/pages/NotFound';
 import PegawaiPage from '@/pages/Pegawai';
 import Events from '@/pages/Events';
+import Absensi from '@/pages/Absensi';
 
 function App() {
+  const { currentUser, loading } = useAuth() as AuthContextType;
+  useInactivityLogout();
   return (
     <AuthProvider>
       <Router>
@@ -42,7 +30,8 @@ function App() {
         <div className="min-h-screen bg-gray-50">
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/validate-qr/:eventId/:token" element={<ValidateQR />} />
+            <Route path="/absensi/validate" element={<Absensi />} />
+            <Route path="/thank-you" element={<ThankYou />} />
             {/* Protected Routes */}
             <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
               <Route path="/" element={<Index />} />

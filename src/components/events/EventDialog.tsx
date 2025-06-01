@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,7 @@ import { useAppFirestore } from '@/hooks/useAppFirestore';
 import { Event, Pegawai } from '@/types'; // Asumsi Pegawai type ada di '@/types'
 import { useAuth } from '@/contexts/useAuth';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast'; // Menggunakan useToast yang sudah ada, diasumsikan dari 'sonner' atau shadcn/ui
+import { useToast } from '@/components/ui/use-toast';
 
 // --- (Definisi tipe FormDataState, EventDialogProps, getDefaultFormData) ---
 type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
@@ -22,8 +22,8 @@ interface FormDataState {
   startDate: string;
   endDate: string;
   location: string;
-  status: EventStatus;
   assignedPegawai: string[];
+  status: EventStatus;
 }
 
 interface EventDialogProps {
@@ -46,8 +46,9 @@ const getDefaultFormData = (event?: Event | null): FormDataState => {
       startDate: formatToDatetimeLocal(startDate),
       endDate: formatToDatetimeLocal(endDate),
       location: event.location,
-      status: event.status as EventStatus,
+  
       assignedPegawai: event.assignedPegawai || [],
+      status: event.status,
     };
   }
 
@@ -63,8 +64,9 @@ const getDefaultFormData = (event?: Event | null): FormDataState => {
     startDate: defaultStartDate,
     endDate: defaultEndDate,
     location: '',
-    status: 'upcoming',
+
     assignedPegawai: [],
+    status: 'upcoming',
   };
 };
 
@@ -96,9 +98,7 @@ export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventD
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleStatusChange = useCallback((value: string) => {
-    handleInputChange('status', value as EventStatus);
-  }, [handleInputChange]);
+
 
   const handlePegawaiToggle = useCallback((pegawaiId: string, checked: boolean | 'indeterminate') => {
     if (typeof checked === 'boolean') {
@@ -130,6 +130,7 @@ export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventD
       startDate: new Date(formData.startDate),
       endDate: new Date(formData.endDate),
       createdBy: currentUser?.uid || null,
+      status: event?.status || 'upcoming' as EventStatus,
     };
 
     try {
@@ -166,7 +167,7 @@ export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventD
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, currentUser?.uid, event?.id, addEvent, updateEvent, onOpenChange, toast, onSaveSuccess]);
+  }, [formData, currentUser?.uid, event?.id, event?.status, addEvent, updateEvent, onOpenChange, toast, onSaveSuccess]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -176,6 +177,9 @@ export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventD
           <DialogTitle className="text-xl font-semibold">
             {event ? 'Edit Kegiatan' : 'Buat Kegiatan Baru'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {event ? 'Formulir untuk mengedit detail kegiatan.' : 'Formulir untuk membuat kegiatan baru.'}
+          </DialogDescription>
         </DialogHeader>
 
         {/* Form menjadi area konten utama yang bisa di-scroll */}
@@ -210,7 +214,7 @@ export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventD
           </div>
 
           {/* Kategori & Lokasi */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="category" className="text-sm font-medium">Kategori</Label>
               <Input
@@ -238,7 +242,7 @@ export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventD
           </div>
 
           {/* Waktu Mulai & Selesai */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="startDate" className="text-sm font-medium">Waktu Mulai</Label>
               <Input
@@ -266,25 +270,7 @@ export function EventDialog({ open, onOpenChange, event, onSaveSuccess }: EventD
             </div>
           </div>
 
-          {/* Status */}
-          <div className="space-y-1.5">
-            <Label htmlFor="status" className="text-sm font-medium">Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={handleStatusChange}
-              disabled={isSubmitting}
-            >
-              <SelectTrigger className="h-10">
-                <SelectValue placeholder="Pilih Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="upcoming">Akan Datang</SelectItem>
-                <SelectItem value="ongoing">Sedang Berlangsung</SelectItem>
-                <SelectItem value="completed">Selesai</SelectItem>
-                <SelectItem value="cancelled">Dibatalkan</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+
 
           {/* Tugaskan Pegawai */}
           {pegawai.length > 0 && (

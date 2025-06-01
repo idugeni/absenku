@@ -8,20 +8,7 @@ import { useAppFirestore } from '@/hooks/useAppFirestore';
 import { Link } from 'react-router-dom';
 import { Search, PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-interface Pegawai {
-  id?: string;
-  nama: string;
-  nip: string;
-  jabatan: string;
-  email: string;
-  status: 'aktif' | 'pensiun' | 'cuti';
-  tanggalBergabung?: Date;
-  photoUrl?: string;
-  qrCode?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { Pegawai } from '@/types'; // Import Pegawai interface from types
 
 const getGradientColorClass = (id: string) => {
   const colors = [
@@ -133,6 +120,7 @@ const PegawaiPage = () => {
                 </div>
                 <CardContent className="flex-grow text-sm text-foreground space-y-2 p-5 border-b border-gray-200 dark:border-gray-700 text-center">
                   <p><span className="break-all text-gray-800 dark:text-gray-200 md:whitespace-normal">{p.email}</span></p>
+                  {p.phoneNumber && <p><span className="break-all text-gray-800 dark:text-gray-200 md:whitespace-normal">{p.phoneNumber}</span></p>}
                   <p className="flex items-center justify-center"><Badge className={`px-3 py-1 text-xs font-medium rounded-full ${getGradientColorClass(p.id!)} text-white`}>{p.status.charAt(0).toUpperCase() + p.status.slice(1).replace('_', ' ')}</Badge></p>
                   <p><span className="break-words text-gray-800 dark:text-gray-200">{p.tanggalBergabung ? new Date(p.tanggalBergabung).toLocaleDateString('id-ID') : 'N/A'}</span></p>
                 </CardContent>

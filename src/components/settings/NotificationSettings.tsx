@@ -53,7 +53,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ loading, se
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4">
+    <div className="max-w-4xl mx-auto py-8 px-4">
       <Card className="shadow-lg border-2 border-gray-100 dark:border-gray-800">
         <CardHeader className="border-b pb-4">
           <CardTitle className="flex items-center text-2xl font-bold text-gray-800 dark:text-gray-100">

@@ -9,7 +9,9 @@ import {
   onSnapshot,
   query,
   orderBy,
-  Timestamp
+  Timestamp,
+  getDocs,
+  where
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/components/ui/use-toast";
@@ -39,15 +41,29 @@ export const useEventStore = (): UseEventStoreReturn => {
   const collectionName = "events";
 
   const updateEvent = useCallback(async (
-    id: string,
+    eventId: string,
     eventData: Partial<Omit<Event, "id">>
   ) => {
      try {
+      const q = query(collection(db, collectionName), where('id', '==', eventId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        toast({
+          title: 'Error',
+          description: 'Event not found.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const firestoreDocId = querySnapshot.docs[0].id;
+
       const dataToUpdate = convertDatesToTimestamps({
         ...eventData,
         updatedAt: new Date(),
       });
-      await updateDoc(doc(db, collectionName, id), dataToUpdate);
+      await updateDoc(doc(db, collectionName, firestoreDocId), dataToUpdate);
       toast({ title: "Berhasil", description: "Event diperbarui." });
     } catch (error) {
       toast({
@@ -68,12 +84,16 @@ export const useEventStore = (): UseEventStoreReturn => {
       q,
       (snapshot) => {
         const data = processSnapshot<Event>(snapshot);
+
         const now = new Date();
         data.forEach(event => {
+
           // Check if event end date is in the past and status is not already completed or cancelled
           if (event.endDate instanceof Date && event.endDate < now && event.status !== 'completed' && event.status !== 'cancelled') {
             // Automatically update status to completed
-            updateEvent(event.id!, { status: 'completed' });
+            if (event.id) {
+              updateEvent(event.id, { status: 'completed' });
+            }
           }
         });
         setEvents(data);
@@ -96,27 +116,36 @@ export const useEventStore = (): UseEventStoreReturn => {
   ) => {
     try {
       const now = new Date();
-      const eventId = uuidv4(); // Generate a unique ID for the event
       const token = uuidv4(); // Generate a unique token for the QR code
+
+      // Prepare initial data without the 'id' and QR code related fields
+      const initialDataToSave = convertDatesToTimestamps({
+        ...eventInput,
+        qrCodeToken: token,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      // Add the document to get its Firestore-generated ID
+      const docRef = await addDoc(collection(db, collectionName), initialDataToSave);
+      const firestoreDocId = docRef.id;
 
       // Calculate QR code validity (e.g., 1 hour from now)
       const qrCodeValidityDuration = 60 * 60 * 1000; // 1 hour in milliseconds
       const qrCodeValidUntil = new Date(now.getTime() + qrCodeValidityDuration);
 
-      const qrCodeBase64 = await generateEventQRCode({ eventId, token });
+      // Generate QR code using the Firestore document ID and the token
+      const qrCodeBase64 = await generateEventQRCode({ eventId: firestoreDocId, token });
 
-      const dataToSave = convertDatesToTimestamps({
-        ...eventInput,
-        id: eventId, // Assign the generated eventId
+      // Update the document with the Firestore ID and QR code details
+      await updateDoc(doc(db, collectionName, firestoreDocId), {
+        id: firestoreDocId, // Assign the Firestore-generated ID to the 'id' field
         qrCode: qrCodeBase64,
         qrCodeValidUntil: qrCodeValidUntil,
-        qrCodeToken: token,
-        createdAt: now,
-        updatedAt: now,
       });
-      const docRef = await addDoc(collection(db, collectionName), dataToSave);
+
       toast({ title: "Berhasil", description: "Event ditambahkan." });
-      return docRef.id;
+      return firestoreDocId;
     } catch (error) {
       toast({
         title: "Error",
@@ -126,11 +155,41 @@ export const useEventStore = (): UseEventStoreReturn => {
     }
   };
 
-  const deleteEvent = async (id: string) => {
+  const deleteEvent = async (eventId: string) => {
     try {
-      await deleteDoc(doc(db, collectionName, id));
-      toast({ title: "Berhasil", description: "Event dihapus." });
+
+      const q = query(collection(db, collectionName), where('id', '==', eventId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        toast({
+          title: 'Error',
+          description: 'Event not found.',
+          variant: 'destructive',
+        });
+
+        return;
+      }
+
+      // Assuming there's only one document with this internal ID
+      const docToDelete = querySnapshot.docs[0];
+      const firestoreDocId = docToDelete.id;
+
+      // Delete all related attendance records
+      const attendanceCollectionRef = collection(db, 'attendance');
+      const attendanceQuery = query(attendanceCollectionRef, where('eventId', '==', eventId));
+      const attendanceSnapshot = await getDocs(attendanceQuery);
+
+      const deleteAttendancePromises = attendanceSnapshot.docs.map(async (attendanceDoc) => {
+        await deleteDoc(doc(db, 'attendance', attendanceDoc.id));
+      });
+
+      await Promise.all(deleteAttendancePromises);
+
+      await deleteDoc(doc(db, collectionName, firestoreDocId));
+      toast({ title: "Berhasil", description: "Event dan absensi terkait dihapus." });
     } catch (error) {
+
       toast({
         title: "Error",
         description: `Error deleting ${collectionName}: ${error.message}`,

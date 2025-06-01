@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -124,6 +124,9 @@ const PegawaiList = ({ open, onOpenChange }: PegawaiListProps) => {
                 Tambah Pegawai
               </Button>
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Kelola data pegawai, termasuk menambah, mengedit, dan menghapus informasi pegawai.
+            </DialogDescription>
           </DialogHeader>
 
           {/* Konten utama yang dapat scroll, ambil sisa ruang */}

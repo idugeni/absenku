@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useEventStore } from '@/hooks/useEventStore';
 import { EventDialog } from '@/components/events/EventDialog';
 import { Event } from '@/types';
@@ -26,11 +26,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { format } from 'date-fns';
+import { format, isBefore, isAfter, isEqual } from 'date-fns';
 import { id } from 'date-fns/locale';
 
+const getEventStatus = (startDate: Date, endDate: Date): 'upcoming' | 'ongoing' | 'completed' => {
+  const now = new Date();
+  if (isBefore(now, startDate)) {
+    return 'upcoming';
+  } else if (isAfter(now, endDate)) {
+    return 'completed';
+  } else if (isAfter(now, startDate) || isEqual(now, startDate) && isBefore(now, endDate) || isEqual(now, endDate)) {
+    return 'ongoing';
+  }
+  return 'upcoming'; // Default or fallback
+};
+
 const Events = () => {
-  const { events, deleteEvent, eventsLoading } = useEventStore();
+  const { events, deleteEvent, eventsLoading, updateEvent } = useEventStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isQrCodeDialogOpen, setIsQrCodeDialogOpen] = useState(false); // State for QR Code dialog
@@ -73,6 +85,19 @@ const Events = () => {
       });
     }
   }, [deleteEvent, toast]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      events.forEach(event => {
+        const currentStatus = getEventStatus(new Date(event.startDate), new Date(event.endDate));
+        if (event.status !== currentStatus && event.id) {
+          updateEvent(event.id, { status: currentStatus });
+        }
+      });
+    }, 60 * 1000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [events, updateEvent]);
 
   const handleDialogClose = useCallback(() => {
     setIsDialogOpen(false);
@@ -169,16 +194,16 @@ const Events = () => {
                     <div className="flex justify-center mt-4">
                       <Badge
                         className={`
-                          ${event.status === 'upcoming' && 'bg-blue-100 text-blue-800 hover:bg-blue-200'}
-                          ${event.status === 'ongoing' && 'bg-green-100 text-green-800 hover:bg-green-200'}
-                          ${event.status === 'completed' && 'bg-gray-100 text-gray-800 hover:bg-gray-200'}
+                          ${getEventStatus(new Date(event.startDate), new Date(event.endDate)) === 'upcoming' && 'bg-blue-100 text-blue-800 hover:bg-blue-200'}
+                          ${getEventStatus(new Date(event.startDate), new Date(event.endDate)) === 'ongoing' && 'bg-green-100 text-green-800 hover:bg-green-200'}
+                          ${getEventStatus(new Date(event.startDate), new Date(event.endDate)) === 'completed' && 'bg-gray-100 text-gray-800 hover:bg-gray-200'}
                           ${event.status === 'cancelled' && 'bg-red-100 text-red-800 hover:bg-red-200'}
                           px-2 py-1 text-xs font-medium
                         `}
                       >
-                        {event.status === 'upcoming' && 'Akan Datang'}
-                        {event.status === 'ongoing' && 'Sedang Berlangsung'}
-                        {event.status === 'completed' && 'Selesai'}
+                        {getEventStatus(new Date(event.startDate), new Date(event.endDate)) === 'upcoming' && 'Akan Datang'}
+                        {getEventStatus(new Date(event.startDate), new Date(event.endDate)) === 'ongoing' && 'Sedang Berlangsung'}
+                        {getEventStatus(new Date(event.startDate), new Date(event.endDate)) === 'completed' && 'Selesai'}
                         {event.status === 'cancelled' && 'Dibatalkan'}
                       </Badge>
                     </div>

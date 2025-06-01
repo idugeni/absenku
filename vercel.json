@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/validate-qr",
-      "destination": "/api/validate-qr"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

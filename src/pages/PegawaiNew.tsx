@@ -7,36 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { CalendarIcon, Loader2 } from 'lucide-react'; // Icon untuk loading dan kalender
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Untuk Date Picker
-import { Calendar } from '@/components/ui/calendar'; // Komponen Kalender
-import { format } from 'date-fns';
-import { id as LocaleID } from 'date-fns/locale'; // Locale Indonesia untuk format tanggal
-import { ArrowLeft } from 'lucide-react'; // Import icon ArrowLeft
-
-// Interface Pegawai (asumsi sudah ada dan benar)
-interface Pegawai {
-  id?: string;
-  nama: string;
-  nip: string;
-  jabatan: string;
-  email: string;
-  status: 'aktif' | 'pensiun' | 'cuti';
-  tanggalBergabung?: Date; // Akan kita tambahkan ke form
-  photoUrl?: string;
-  qrCode?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { Pegawai } from '@/types';
 
 const PegawaiNew = () => {
-  const [formData, setFormData] = useState<Partial<Pegawai>>({ // Gunakan Partial<Pegawai> jika ada field opsional
+  const [formData, setFormData] = useState<Partial<Pegawai>>({
     nama: '',
     nip: '',
     jabatan: '',
     email: '',
     status: 'aktif',
-    tanggalBergabung: undefined, // Inisialisasi field baru
+    tanggalBergabung: new Date(),
+    phoneNumber: '',
   });
   const [isLoading, setIsLoading] = useState(false); // State untuk loading submit
   const { addPegawai } = useAppFirestore();
@@ -62,12 +44,7 @@ const PegawaiNew = () => {
     }));
   };
 
-  const handleDateChange = (date: Date | undefined) => {
-    setFormData(prev => ({
-      ...prev,
-      tanggalBergabung: date,
-    }));
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,13 +68,14 @@ const PegawaiNew = () => {
         nip: formData.nip!,
         jabatan: formData.jabatan!,
         email: formData.email!,
+        phoneNumber: formData.phoneNumber || '',
         status: formData.status!,
-        tanggalBergabung: formData.tanggalBergabung, // Bisa undefined
+        tanggalBergabung: new Date(),
       };
 
       await addPegawai({
         ...dataToSubmit,
-        tanggalBergabung: formData.tanggalBergabung || new Date() // Provide default value if undefined
+        tanggalBergabung: new Date()
       });
       toast({
         title: 'Berhasil!',
@@ -189,31 +167,21 @@ const PegawaiNew = () => {
                 className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
               />
             </div>
-            
-            {/* Tanggal Bergabung (Contoh Date Picker) */}
+
+            {/* Nomor Telepon/WhatsApp */}
             <div>
-                <Label htmlFor="tanggalBergabung" className="font-medium text-gray-700 dark:text-gray-300">Tanggal Bergabung</Label>
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant={"outline"}
-                            className={`w-full justify-start text-left font-normal mt-1 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 ${!formData.tanggalBergabung && "text-muted-foreground"}`}
-                        >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formData.tanggalBergabung ? format(formData.tanggalBergabung, "PPP", { locale: LocaleID }) : <span>Pilih tanggal</span>}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                        <Calendar
-                            mode="single"
-                            selected={formData.tanggalBergabung}
-                            onSelect={handleDateChange}
-                            locale={LocaleID} // Menggunakan locale Indonesia
-                            className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                        />
-                    </PopoverContent>
-                </Popover>
+              <Label htmlFor="phoneNumber" className="font-medium text-gray-700 dark:text-gray-300">Nomor Telepon/WhatsApp</Label>
+              <Input
+                id="phoneNumber"
+                type="text"
+                value={formData.phoneNumber || ''}
+                onChange={handleChange}
+                placeholder="Contoh: +6281234567890"
+                className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+              />
             </div>
+            
+
 
             {/* Status */}
             <div>

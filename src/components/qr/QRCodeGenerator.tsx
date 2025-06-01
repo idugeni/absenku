@@ -1,5 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-// import { QRCodeSVG } from 'qrcode.react'; // No longer needed
+import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
@@ -34,6 +33,9 @@ const QRCodeGenerator = ({ open, onOpenChange, eventData }: QRCodeGeneratorProps
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>QR Code Kegiatan: {eventData.name}</DialogTitle>
+          <DialogDescription className="sr-only">
+            QR Code untuk kegiatan {eventData.name}. Scan untuk absensi.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center p-4">
           {eventData.qrCode ? (

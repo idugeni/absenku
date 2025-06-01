@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users, Clock, QrCode, Edit, Trash } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useAppFirestore } from '@/hooks/useAppFirestore';
 import { Event } from '@/types';
 
 import EventDialog from '@/components/events/EventDialog';
-import QRCodeGenerator from '@/components/qr/QRCodeGenerator'; // Import QRCodeGenerator
+import QRCodeGenerator from '@/components/qr/QRCodeGenerator';
 
 interface EventDetailProps {
   open: boolean;
@@ -93,6 +93,9 @@ const EventDetail = ({ open, onOpenChange, event }: EventDetailProps) => {
               </div>
               <DialogClose />
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Menampilkan detail lengkap dari kegiatan yang dipilih, termasuk informasi umum, statistik kehadiran, dan daftar pegawai yang mengikuti.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6">

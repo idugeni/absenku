@@ -12,9 +12,8 @@ export interface Event {
   createdAt: Date;
   updatedAt: Date;
   qrCode: string;
-  qrCodeValue?: string;
-  qrCodeValidUntil?: Date;
   qrCodeToken?: string;
+  qrCodeValidUntil?: Date;
 }
 
 export interface Pegawai {
