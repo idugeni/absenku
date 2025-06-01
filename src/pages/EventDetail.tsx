@@ -14,8 +14,9 @@ import EventDetailsCard from '@/components/events/EventDetailsCard';
 import EventLoadingState from '@/components/events/EventLoadingState';
 import EventNotFoundState from '@/components/events/EventNotFoundState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { exportToExcel } from '@/lib/utils';
 
 const getEventStatus = (startDate: Date, endDate: Date): 'upcoming' | 'ongoing' | 'completed' => {
   const now = new Date();
@@ -39,6 +40,7 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const [nip, setNip] = useState('');
   const [isSubmittingAttendance, setIsSubmittingAttendance] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { attendance, attendanceLoading, addAttendance } = useAttendanceStore();
   const { pegawai, pegawaiLoading } = usePegawaiStore();
@@ -170,11 +172,49 @@ const EventDetail = () => {
 
   const filteredAttendance = attendance.filter(att => att.eventId === event.id);
 
+  const handleExportExcel = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    if (!event) return;
+
+    const dataToExport = filteredAttendance.map((att, index) => ({
+      'No': index + 1,
+      'NIP Pegawai': att.nip,
+      'Nama Pegawai': att.employeeName,
+      'Waktu Check-in': att.checkInTime ? new Date(att.checkInTime).toLocaleString('id-ID') : '',
+      'Status': att.checkInTime ? 'Hadir' : 'Tidak Hadir',
+    }));
+
+    const eventNameForFile = event.name.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `Absensi_${eventNameForFile}`;
+    const sheetName = 'Absensi';
+
+    const columnWidths = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 30 },
+      { wch: 25 },
+      { wch: 15 },
+    ];
+
+    exportToExcel(dataToExport, fileName, sheetName, { columnWidths, wrapText: true });
+    setIsExporting(false);
+  };
+
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <Button onClick={() => navigate('/events')} className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Kembali ke Daftar Kegiatan
-      </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 w-full">
+        <Button onClick={() => navigate('/events')} className="w-full sm:w-auto">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Kembali ke Daftar Kegiatan
+        </Button>
+        <Button 
+          onClick={handleExportExcel} 
+          className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white" 
+          disabled={isExporting}
+        >
+          <FileText className="mr-2 h-4 w-4" /> Download to Excel
+        </Button>
+      </div>
       <EventDetailsCard
         event={event}
         onEdit={handleEditEvent}
@@ -182,7 +222,7 @@ const EventDetail = () => {
         onDelete={handleDeleteEvent}
       />
 
-      <div className="mt-8 max-w-4xl mx-auto">
+      <div className="mt-8 max-full mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Absensi Kegiatan</CardTitle>

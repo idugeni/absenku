@@ -1,10 +1,37 @@
 import React from 'react';
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Home, Scan, FileText, Settings, Users, BarChart } from 'lucide-react';
+import { Home, FileText, Settings, Users, BarChart } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function exportToExcel(data: Record<string, any>[], fileName: string, sheetName: string, options?: { columnWidths?: { wch: number }[], wrapText?: boolean }) {
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  if (options?.columnWidths) {
+    ws['!cols'] = options.columnWidths;
+  }
+
+  if (options?.wrapText) {
+    const range = XLSX.utils.decode_range(ws['!ref']!);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[cell_address]) continue;
+        if (!ws[cell_address].s) ws[cell_address].s = {};
+        ws[cell_address].s.alignment = { wrapText: true };
+      }
+    }
+  }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const dataBlob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  saveAs(dataBlob, fileName + '.xlsx');
 }
 
 interface NavItem {
