@@ -18,7 +18,7 @@ export interface UseAttendanceStoreReturn {
   attendance: Attendance[];
   attendanceLoading: boolean;
   addAttendance: (
-    attendanceData: Omit<Attendance, "id" | "createdAt" | "status">,
+    attendanceData: Omit<Attendance, "id" | "createdAt" | "status" | "employeeName">,
     eventStartTime: Date,
     employeeName: string
   ) => Promise<string | undefined>;
@@ -69,17 +69,13 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
 
       let status: 'present' | 'late' | 'absent' = 'present';
 
-      if (checkInTime > eventStartTime && now >= eventStartTime) {
+      if (checkInTime > eventStartTime) {
         status = 'late';
-      } else if (checkInTime <= eventStartTime && now >= eventStartTime) {
-        status = 'present';
-      } else if (checkInTime < eventStartTime && now < eventStartTime) {
-        status = 'present';
       }
 
       const dataToSave = convertDatesToTimestamps({
         ...attendanceInput,
-        employeeName: employeeName,
+        employeeName,
         checkInTime,
         status,
         createdAt: new Date(),

@@ -181,21 +181,25 @@ export const useAbsensi = (): UseAbsensiResult => {
       );
       const attendanceSnapshot = await getDocs(attendanceQuery);
 
-      if (!attendanceSnapshot.empty) {
-        setIsSubmitting(false);
-        navigate(`/thank-you?eventName=${eventData.name.replace(/ /g, '-')}&pegawaiName=${currentPegawaiData.nama.replace(/ /g, '-')}`);
-        return;
-      }
-
       const newAttendanceData = {
         eventId: eventId,
         pegawaiId: pegawaiId,
-        nama: currentPegawaiData.nama,
+        employeeName: currentPegawaiData.nama,
         nip: currentPegawaiData.nip,
         event: eventData,
       };
 
-      await addAttendance(newAttendanceData);
+      if (!attendanceSnapshot.empty) {
+        setIsSubmitting(false);
+        // Attendance already recorded, proceed to thank-you page
+      } else {
+        await addAttendance(newAttendanceData, eventData.startDate, currentPegawaiData.nama);
+        setNip('');
+      }
+
+      navigate(`/thank-you?eventName=${eventData.name.replace(/ /g, '-')}&pegawaiName=${currentPegawaiData.nama.replace(/ /g, '-')}`);
+
+      await addAttendance(newAttendanceData, eventData.startDate, currentPegawaiData.nama);
 
       setNip('');
       navigate(`/thank-you?eventName=${eventData.name.replace(/ /g, '-')}&pegawaiName=${currentPegawaiData.nama.replace(/ /g, '-')}`);

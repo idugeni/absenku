@@ -64,4 +64,5 @@ export interface Attendance {
   createdAt: Date;
   location?: string;
   notes?: string;
+  event: Event;
 }
