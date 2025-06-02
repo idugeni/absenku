@@ -198,11 +198,6 @@ export const useAbsensi = (): UseAbsensiResult => {
       }
 
       navigate(`/thank-you?eventName=${eventData.name.replace(/ /g, '-')}&pegawaiName=${currentPegawaiData.nama.replace(/ /g, '-')}`);
-
-      await addAttendance(newAttendanceData, eventData.startDate, currentPegawaiData.nama);
-
-      setNip('');
-      navigate(`/thank-you?eventName=${eventData.name.replace(/ /g, '-')}&pegawaiName=${currentPegawaiData.nama.replace(/ /g, '-')}`);
     } catch (error) {
       toast({
         title: 'Kesalahan Sistem',
