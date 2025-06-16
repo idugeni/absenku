@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 const ATTENDANCE_STATUS = {
   PRESENT: 'present',
-  LATE: 'late',
+
   ABSENT: 'absent',
 } as const;
 
@@ -83,13 +83,12 @@ const Reports = () => {
   }, [pegawai, events, attendance]);
 
   const attendanceStats = useMemo(() => {
-    if (!attendance?.length) return { present: 0, late: 0, absent: 0, total: 0 };
+    if (!attendance?.length) return { present: 0, absent: 0, total: 0 };
     
     const present = attendance.filter(a => a.status === ATTENDANCE_STATUS.PRESENT).length;
-    const late = attendance.filter(a => a.status === ATTENDANCE_STATUS.LATE).length;
     const absent = attendance.filter(a => a.status === ATTENDANCE_STATUS.ABSENT).length;
     
-    return { present, late, absent, total: attendance.length };
+    return { present, absent, total: attendance.length };
   }, [attendance]);
 
   const filteredAttendance = useMemo(() => {
@@ -110,7 +109,7 @@ const Reports = () => {
 
   const statusBadgeConfig: Record<AttendanceStatusType, { className: string; label: string }> = {
     [ATTENDANCE_STATUS.PRESENT]: { className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200", label: "Hadir" },
-    [ATTENDANCE_STATUS.LATE]: { className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200", label: "Terlambat" },
+  
     [ATTENDANCE_STATUS.ABSENT]: { className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200", label: "Tidak Hadir" },
   };
 
@@ -194,7 +193,7 @@ const Reports = () => {
           <CardContent>
             <div className="space-y-4">
               <AttendanceProgressBar label="Hadir" value={attendanceStats.present} total={attendanceStats.total} colorClass="bg-green-500" />
-              <AttendanceProgressBar label="Terlambat" value={attendanceStats.late} total={attendanceStats.total} colorClass="bg-yellow-500" />
+
               <AttendanceProgressBar label="Tidak Hadir" value={attendanceStats.absent} total={attendanceStats.total} colorClass="bg-red-500" />
             </div>
           </CardContent>
@@ -256,7 +255,6 @@ const Reports = () => {
                   <SelectContent>
                     <SelectItem value="all">Semua Status</SelectItem>
                     <SelectItem value={ATTENDANCE_STATUS.PRESENT}>Hadir</SelectItem>
-                    <SelectItem value={ATTENDANCE_STATUS.LATE}>Terlambat</SelectItem>
                     <SelectItem value={ATTENDANCE_STATUS.ABSENT}>Tidak Hadir</SelectItem>
                   </SelectContent>
                 </Select>

@@ -162,10 +162,7 @@ const EventDetail = ({ open, onOpenChange, event }: EventDetailProps) => {
                     <p className="text-2xl font-bold text-green-600">{eventAttendance.filter(a => a.status === 'present').length}</p>
                     <p className="text-sm text-green-600">Hadir</p>
                   </div>
-                  <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <p className="text-2xl font-bold text-yellow-600">{eventAttendance.filter(a => a.status === 'late').length}</p>
-                    <p className="text-sm text-yellow-600">Terlambat</p>
-                  </div>
+
                   <div className="p-4 bg-red-50 rounded-lg border border-red-200">
                     <p className="text-2xl font-bold text-red-600">{eventAttendance.filter(a => a.status === 'absent').length}</p>
                     <p className="text-sm text-red-600">Tidak Hadir</p>
@@ -195,12 +192,10 @@ const EventDetail = ({ open, onOpenChange, event }: EventDetailProps) => {
                           <Badge
                             className={
                               pegawaiAttendance.status === 'present' ? 'bg-green-100 text-green-800' :
-                              pegawaiAttendance.status === 'late' ? 'bg-yellow-100 text-yellow-800' :
                               'bg-red-100 text-red-800'
                             }
                           >
-                            {pegawaiAttendance.status === 'present' ? 'Hadir' :
-                             pegawaiAttendance.status === 'late' ? 'Terlambat' : 'Tidak Hadir'}
+                            {pegawaiAttendance.status === 'present' ? 'Hadir' : 'Tidak Hadir'}
                           </Badge>
                         ) : (
                           <Badge variant="outline">Belum Absen</Badge>

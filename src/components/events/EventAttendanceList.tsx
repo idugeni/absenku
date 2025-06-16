@@ -63,14 +63,11 @@ const EventAttendanceList: React.FC<EventAttendanceListProps> = ({ attendance, l
                   <Badge
                     className={`
                       ${item.status === 'present' && 'bg-green-100 text-green-800'}
-                      ${item.status === 'late' && 'bg-yellow-100 text-yellow-800'}
                       ${item.status === 'absent' && 'bg-red-100 text-red-800'}
                       px-2 py-1 text-xs font-medium
                     `}
                   >
-                    {item.status === 'present' && 'Hadir'}
-                    {item.status === 'late' && 'Terlambat'}
-                    {item.status === 'absent' && 'Tidak Hadir'}
+                    {item.status === 'present' ? 'Hadir' : 'Tidak Hadir'}
                   </Badge>
                 </TableCell>
               </TableRow>

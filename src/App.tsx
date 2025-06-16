@@ -1,8 +1,7 @@
+// src/App.tsx
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { useAuth } from '@/contexts/useAuth';
-import { AuthContextType } from '@/contexts/AuthContextDefinition';
 import { Toaster } from '@/components/ui/toaster';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ErrorBoundary from '@/components/layout/ErrorBoundary';
@@ -22,13 +21,11 @@ import EventDetail from '@/pages/EventDetail';
 import Absensi from '@/pages/Absensi';
 
 function App() {
-  const { currentUser, loading } = useAuth() as AuthContextType;
 
   return (
     <ErrorBoundary>
       <AuthProvider>
         <Router>
-          
           <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/login" element={<Login />} />

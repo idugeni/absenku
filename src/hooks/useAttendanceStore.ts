@@ -25,8 +25,6 @@ export interface UseAttendanceStoreReturn {
   updateAttendance: (id: string, attendanceData: Partial<Attendance>) => Promise<void>;
 }
 
-import { Event } from "@/types";
-
 export const useAttendanceStore = (): UseAttendanceStoreReturn => {
   const { toast } = useToast();
   const [attendance, setAttendance] = useState<Attendance[]>([]);
@@ -59,20 +57,15 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
   }, [toast]);
 
   const addAttendance = async (
-    attendanceInput: Omit<Attendance, "id" | "createdAt" | "status" | "employeeName">,
+    attendanceInput: Omit<Attendance, "id" | "createdAt" | "status">,
     eventStartTime: Date,
-    employeeName: string,
-    maxAttendanceTime: number = 30 // default 30 menit jika tidak diberikan
+    employeeName: string
   ) => {
     try {
       const checkInTime = new Date();
       const now = new Date();
 
-      let status: 'present' | 'late' | 'absent' = 'present';
-      const attendanceDeadline = new Date(eventStartTime.getTime() + maxAttendanceTime * 60000);
-      if (checkInTime > attendanceDeadline) {
-        status = 'late';
-      }
+      const status: 'present' | 'absent' = 'present';
 
       const dataToSave = convertDatesToTimestamps({
         ...attendanceInput,

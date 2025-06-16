@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 
 import React, { useContext, useEffect, useState } from 'react';
 import {
@@ -7,7 +8,7 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore'; // getDoc tidak digunakan, bisa dihapus jika tidak diperlukan
 import { auth, db } from '@/lib/firebase';
 import { AuthContext, AuthContextType, UserProfile } from '@/contexts/AuthContextDefinition';
 import { useToast } from '@/components/ui/use-toast';
@@ -16,7 +17,7 @@ import { useToast } from '@/components/ui/use-toast';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Initial state is true
   const { toast } = useToast();
 
   const login = async (email: string, password: string) => {
@@ -49,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Success",
         description: "Logout successful.",
       });
-    } catch (error) {
+    } catch (error: any) { // Tambahkan any untuk tipe error
       toast({
         title: "Error",
         description: `Error during logout: ${error.message}`,
@@ -59,34 +60,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    let unsubscribeUserProfile: (() => void) | undefined; // Deklarasi untuk menyimpan fungsi unsubscribe onSnapshot
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       
       if (user) {
         const userDocRef = doc(db, 'users', user.uid);
-        const unsubscribeProfile = onSnapshot(userDocRef, (docSnapshot) => {
+        // Pastikan unsubscribe dari langganan profil sebelumnya jika ada
+        if (unsubscribeUserProfile) {
+          unsubscribeUserProfile();
+        }
+        // Subscribe ke user profile dan simpan fungsi unsubscribe
+        unsubscribeUserProfile = onSnapshot(userDocRef, (docSnapshot) => {
           if (docSnapshot.exists()) {
             setUserProfile(docSnapshot.data() as UserProfile);
           } else {
             setUserProfile(null);
+            // Optional: Log jika profil tidak ditemukan, mungkin ada inkonsistensi data
+            console.warn(`User profile not found for UID: ${user.uid}`);
           }
+          // Di sini Anda bisa mempertimbangkan untuk mematikan loading juga
+          // jika profil adalah bagian esensial dari proses loading.
+          // Namun, biarkan setLoading(false) di luar if/else if ini
+          // agar selalu dipanggil setelah onAuthStateChanged selesai.
+        }, (error) => { // Tambahkan error handling untuk onSnapshot
+            console.error("Error fetching user profile:", error);
+            setUserProfile(null);
+            toast({
+                title: "Error",
+                description: `Error fetching user profile: ${error.message}`,
+                variant: "destructive",
+            });
         });
-        return unsubscribeProfile;
       } else {
+        // Jika tidak ada user, pastikan juga unsubscribe dari profile sebelumnya
+        if (unsubscribeUserProfile) {
+          unsubscribeUserProfile();
+          unsubscribeUserProfile = undefined; // Reset
+        }
         setUserProfile(null);
       }
       
-      setLoading(false);
+      // Penting: Pastikan setLoading(false) dipanggil setelah onAuthStateChanged selesai memproses.
+      // Ini harus di luar blok if (user) untuk memastikan selalu dipanggil.
+      setLoading(false); 
     });
 
+    // Cleanup function untuk useEffect
     return () => {
-      unsubscribe();
-      
-      
-      
-      
+      unsubscribeAuth(); // Unsubscribe dari onAuthStateChanged
+      if (unsubscribeUserProfile) { // Pastikan unsubscribe dari onSnapshot jika masih ada
+        unsubscribeUserProfile();
+      }
     };
-  }, [toast]);
+  }, [toast]); // Dependency array: Pastikan ini benar.
 
   const value: AuthContextType = {
     currentUser,
@@ -99,7 +127,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {/*
+        PERBAIKAN UTAMA DI SINI:
+        Hapus kondisi {!loading && children}.
+        Biarkan children selalu dirender. ProtectedRoute akan menangani
+        tampilan loading dan redireksi berdasarkan 'loading' dan 'currentUser'.
+      */}
+      {children}
     </AuthContext.Provider>
   );
 };
