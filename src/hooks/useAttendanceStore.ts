@@ -59,17 +59,18 @@ export const useAttendanceStore = (): UseAttendanceStoreReturn => {
   }, [toast]);
 
   const addAttendance = async (
-    attendanceInput: Omit<Attendance, "id" | "createdAt" | "status">,
+    attendanceInput: Omit<Attendance, "id" | "createdAt" | "status" | "employeeName">,
     eventStartTime: Date,
-    employeeName: string
+    employeeName: string,
+    maxAttendanceTime: number = 30 // default 30 menit jika tidak diberikan
   ) => {
     try {
       const checkInTime = new Date();
       const now = new Date();
 
       let status: 'present' | 'late' | 'absent' = 'present';
-
-      if (checkInTime > eventStartTime) {
+      const attendanceDeadline = new Date(eventStartTime.getTime() + maxAttendanceTime * 60000);
+      if (checkInTime > attendanceDeadline) {
         status = 'late';
       }
 
