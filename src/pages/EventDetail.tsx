@@ -121,8 +121,9 @@ const EventDetail = () => {
           eventId: event.id,
           pegawaiId: employee.id,
           nip: employee.nip,
-          employeeName: employee.nama,
           checkInTime: new Date(),
+          employeeName: '',
+          event: undefined
         },
         new Date(event.startDate),
         employee.nama

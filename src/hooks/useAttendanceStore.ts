@@ -18,7 +18,7 @@ export interface UseAttendanceStoreReturn {
   attendance: Attendance[];
   attendanceLoading: boolean;
   addAttendance: (
-    attendanceData: Omit<Attendance, "id" | "createdAt" | "status" | "employeeName">,
+    attendanceData: Omit<Attendance, "id" | "createdAt" | "status">,
     eventStartTime: Date,
     employeeName: string
   ) => Promise<string | undefined>;
