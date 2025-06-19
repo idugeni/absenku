@@ -1,227 +1,257 @@
+// Nama File: EventDetail.tsx
 
 import { useState } from 'react';
-import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Users, Clock, QrCode, Edit, Trash } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, QrCode, Edit, Trash, User, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { useAppFirestore } from '@/hooks/useAppFirestore';
-import { Event } from '@/types';
-
+import { Event, Pegawai as PegawaiType } from '@/types';
 import EventDialog from '@/components/events/EventDialog';
 import QRCodeGenerator from '@/components/qr/QRCodeGenerator';
 
-interface EventDetailProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  event?: Event | null;
-}
+// =========================================================
+// [KOMPONEN HELPER]
+// =========================================================
 
-const EventDetail = ({ open, onOpenChange, event }: EventDetailProps) => {
+/**
+ * Card: Komponen pembungkus dasar yang fleksibel, mendukung tinggi yang sama (h-full).
+ */
+const Card = ({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) => (
+  <div className={`flex flex-col h-full bg-white rounded-xl border border-slate-200 shadow-sm ${className}`}>
+    <div className="flex justify-between items-center p-4 border-b border-slate-200">
+      <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+    </div>
+    <div className="p-4 flex-grow">
+      {children}
+    </div>
+  </div>
+);
+
+/**
+ * ProgressBar: Komponen visual untuk menampilkan data persentase.
+ */
+const ProgressBar = ({ value }: { value: number }) => {
+  const safeValue = Math.max(0, Math.min(100, value));
+  return (
+    <div className="w-full bg-slate-200 rounded-full h-2.5">
+      <div
+        className="bg-green-600 h-2.5 rounded-full transition-all duration-500"
+        style={{ width: `${safeValue}%` }}
+      />
+    </div>
+  );
+};
+
+/**
+ * InfoItem: Menampilkan satu baris informasi dengan ikon.
+ */
+const InfoItem = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: React.ReactNode }) => (
+  <div className="flex items-start gap-4 transition-colors hover:bg-slate-50 p-2 rounded-md">
+    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+      <Icon className="w-5 h-5 text-slate-600" />
+    </div>
+    <div>
+      <p className="text-sm text-slate-500">{label}</p>
+      <p className="font-semibold text-slate-800">{value}</p>
+    </div>
+  </div>
+);
+
+/**
+ * StatCard: Menampilkan satu statistik kunci dalam bentuk angka.
+ */
+const StatCard = ({ icon: Icon, label, value, className }: { icon: React.ElementType; label: string; value: number; className?: string }) => (
+  <div className={`p-4 rounded-xl border ${className}`}>
+    <div className="flex items-center justify-between">
+      <p className="text-sm font-medium">{label}</p>
+      <Icon className="w-5 h-5" />
+    </div>
+    <p className="text-3xl font-bold mt-1">{value}</p>
+  </div>
+);
+
+/**
+ * PegawaiCard: Menampilkan informasi pegawai dengan layout vertikal.
+ */
+const PegawaiCard = ({ pegawai, attendanceStatus }: { pegawai: PegawaiType; attendanceStatus?: 'present' | 'absent' | 'pending' }) => {
+  const statusMap = {
+    present: { text: 'Hadir', icon: CheckCircle2, className: 'bg-green-100 text-green-800 border-green-300' },
+    absent: { text: 'Tidak Hadir', icon: XCircle, className: 'bg-red-100 text-red-800 border-red-300' },
+    pending: { text: 'Belum Absen', icon: AlertCircle, className: 'bg-slate-100 text-slate-600 border-slate-300' },
+  };
+  const status = statusMap[attendanceStatus || 'pending'];
+  return (
+    <div className="flex flex-col items-center text-center gap-2 rounded-lg border bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:border-indigo-400 h-full">
+      <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+        <User className="w-6 h-6 text-slate-500" />
+      </div>
+      <div className="flex-grow">
+        <p className="font-semibold text-slate-900 leading-tight">{pegawai.nama}</p>
+        <p className="text-sm text-slate-500">{pegawai.jabatan}</p>
+      </div>
+      <Badge className={status.className} variant="outline">
+        <status.icon className="w-3.5 h-3.5 mr-1.5" />
+        {status.text}
+      </Badge>
+    </div>
+  );
+};
+
+
+// =========================================================
+// [KOMPONEN UTAMA]
+// =========================================================
+const EventDetail = ({ open, onOpenChange, event }: { open: boolean; onOpenChange: (open: boolean) => void; event: Event | null }) => {
   const { pegawai, attendance, deleteEvent } = useAppFirestore();
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   if (!event) return null;
 
+  // --- Logika & Helper Data ---
+  const eventAttendance = attendance?.filter(att => att.eventId === event.id) || [];
+  const assignedPegawai = pegawai?.filter(p => event.assignedPegawai?.includes(p.id!)) || [];
+  
+  const stats = {
+      present: eventAttendance.filter(a => a.status === 'present').length,
+      absent: eventAttendance.filter(a => a.status === 'absent').length,
+      pending: assignedPegawai.length - eventAttendance.length,
+  };
+
+  const attendancePercentage = assignedPegawai.length > 0
+    ? (stats.present / assignedPegawai.length) * 100
+    : 0;
+  
   const handleDelete = async () => {
-    if (event && event.id) {
+    if (event?.id && window.confirm('Apakah Anda yakin ingin menghapus kegiatan ini? Aksi ini tidak dapat dibatalkan.')) {
       await deleteEvent(event.id);
       onOpenChange(false);
     }
   };
-
+  
+  const formatDateTime = (date: Date) => date.toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ongoing':
-        return <Badge className="bg-green-500 text-white">Berlangsung</Badge>;
-      case 'upcoming':
-        return <Badge className="bg-blue-500 text-white">Akan Datang</Badge>;
-      case 'completed':
-        return <Badge className="bg-gray-500 text-white">Selesai</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive">Dibatalkan</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
-    }
+    const statusMap: { [key: string]: { text: string; className: string } } = {
+      ongoing: { text: 'Berlangsung', className: 'bg-green-100 text-green-800 border-green-200' },
+      upcoming: { text: 'Akan Datang', className: 'bg-blue-100 text-blue-800 border-blue-200' },
+      completed: { text: 'Selesai', className: 'bg-slate-100 text-slate-800 border-slate-200' },
+      cancelled: { text: 'Dibatalkan', className: 'bg-red-100 text-red-800 border-red-200' },
+    };
+    const currentStatus = statusMap[status] || { text: 'Unknown', className: '' };
+    return <Badge className={`text-sm ${currentStatus.className}`}>{currentStatus.text}</Badge>;
   };
-
-  const formatDateTime = (date: Date) => {
-    return date.toLocaleString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  
+  const getAttendanceStatus = (pegawaiId: string) => {
+      const att = eventAttendance.find(a => a.pegawaiId === pegawaiId);
+      if (!att) return 'pending';
+      return att.status as 'present' | 'absent';
   };
-
-  const eventAttendance = attendance?.filter(att => att.eventId === event.id) || [];
-  const assignedPegawai = pegawai?.filter(p => event.assignedPegawai?.includes(p.id!)) || [];
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="pb-4 border-b">
-            <DialogTitle className="flex items-center text-xl font-semibold">
-              <span className="flex-grow">Detail Kegiatan</span>
-              <div className="flex space-x-2 mr-4">
-                <Button
-                  onClick={() => setEditDialogOpen(true)}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-                <Button
-                  onClick={handleDelete}
-                  variant="destructive"
-                  size="sm"
-                >
-                  <Trash className="h-4 w-4 mr-2" />
-                  Hapus
-                </Button>
-                <Button
-                  onClick={() => setQrDialogOpen(true)}
-                  className="bg-green-600 hover:bg-green-700"
-                  size="sm"
-                >
-                  <QrCode className="h-4 w-4 mr-2" />
-                  QR Code
-                </Button>
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0">
+          
+          <DialogHeader className="p-4 sm:p-5 border-b sticky top-0 bg-white z-10">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <div>
+                <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">Detail Kegiatan</DialogTitle>
+                <DialogDescription className="mt-1">Tinjau detail, kehadiran, dan kelola kegiatan.</DialogDescription>
               </div>
-              <DialogClose />
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Menampilkan detail lengkap dari kegiatan yang dipilih, termasuk informasi umum, statistik kehadiran, dan daftar pegawai yang mengikuti.
-            </DialogDescription>
+              <div className="flex w-full flex-row items-center justify-between gap-2 sm:w-auto sm:justify-end sm:gap-2">
+                <Button onClick={() => setEditDialogOpen(true)} variant="outline" size="sm" className="flex-1 sm:flex-none"><Edit className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Edit</span></Button>
+                <Button onClick={() => setQrDialogOpen(true)} className="bg-slate-800 hover:bg-slate-900 flex-1 sm:flex-none" size="sm"><QrCode className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">QR Absensi</span></Button>
+                <Button onClick={handleDelete} variant="destructive" size="sm" className="flex-1 sm:flex-none"><Trash className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Hapus</span></Button>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="space-y-6">
-            {/* Event Header */}
-            <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{event.name}</h2>
-                  <p className="text-gray-600 leading-relaxed">{event.description}</p>
-                </div>
-                {getStatusBadge(event.status)}
-              </div>
-              
-              <div className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                {event.category}
-              </div>
-            </div>
+          <div className="flex-1 overflow-y-auto bg-slate-50/70 p-4 sm:p-6">
+            <div className="space-y-6">
 
-            {/* Event Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Informasi Kegiatan</h3>
+              <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-start gap-4 mb-3">
+                  <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-semibold">{event.category}</span>
+                  {getStatusBadge(event.status)}
+                </div>
+                <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-3">{event.name}</h2>
+                <p className="text-slate-600 leading-relaxed max-w-prose">{event.description}</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card title="Informasi & Waktu">
+                  <div className="flex flex-col justify-around h-full -m-2">
+                    <InfoItem icon={Calendar} label="Mulai" value={formatDateTime(event.startDate)} />
+                    <InfoItem icon={Clock} label="Selesai" value={formatDateTime(event.endDate)} />
+                    <InfoItem icon={MapPin} label="Lokasi" value={event.location} />
+                    <InfoItem icon={Users} label="Total Ditugaskan" value={`${assignedPegawai.length} orang`} />
+                  </div>
+                </Card>
                 
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Calendar className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Mulai</p>
-                      <p className="font-medium">{formatDateTime(event.startDate)}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <Clock className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Selesai</p>
-                      <p className="font-medium">{formatDateTime(event.endDate)}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <MapPin className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Lokasi</p>
-                      <p className="font-medium">{event.location}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <Users className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Pegawai Mengikuti</p>
-                      <p className="font-medium">{assignedPegawai.length} orang</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Statistik Kehadiran</h3>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-2xl font-bold text-green-600">{eventAttendance.filter(a => a.status === 'present').length}</p>
-                    <p className="text-sm text-green-600">Hadir</p>
-                  </div>
-
-                  <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                    <p className="text-2xl font-bold text-red-600">{eventAttendance.filter(a => a.status === 'absent').length}</p>
-                    <p className="text-sm text-red-600">Tidak Hadir</p>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-2xl font-bold text-gray-600">{assignedPegawai.filter(p => !eventAttendance.some(att => att.pegawaiId === p.id)).length}</p>
-                    <p className="text-sm text-gray-600">Belum Absen</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Assigned Pegawai */}
-            {assignedPegawai.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Pegawai yang Mengikuti</h3>
-                <div className="grid gap-3">
-                  {assignedPegawai.map((pegawaiItem) => {
-                    const pegawaiAttendance = eventAttendance.find(a => a.pegawaiId === pegawaiItem.id);
-                    return (
-                      <div key={pegawaiItem.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium">{pegawaiItem.nama}</p>
-                          <p className="text-sm text-gray-600">{pegawaiItem.jabatan}</p>
+                <Card title="Statistik Kehadiran">
+                  <div className="flex flex-col justify-between h-full space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="flex flex-col items-center justify-center p-4 rounded-xl border bg-green-50 text-green-700 border-green-200">
+                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                          <CheckCircle2 className="w-6 h-6" />
                         </div>
-                        {pegawaiAttendance ? (
-                          <Badge
-                            className={
-                              pegawaiAttendance.status === 'present' ? 'bg-green-100 text-green-800' :
-                              'bg-red-100 text-red-800'
-                            }
-                          >
-                            {pegawaiAttendance.status === 'present' ? 'Hadir' : 'Tidak Hadir'}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline">Belum Absen</Badge>
-                        )}
+                        <p className="text-sm font-medium text-center">Hadir</p>
+                        <p className="text-2xl font-bold">{stats.present}</p>
                       </div>
-                    );
-                  })}
-                </div>
+                      
+                      <div className="flex flex-col items-center justify-center p-4 rounded-xl border bg-red-50 text-red-700 border-red-200">
+                        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
+                          <XCircle className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-medium text-center">Tidak Hadir</p>
+                        <p className="text-2xl font-bold">{stats.absent}</p>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center p-4 rounded-xl border bg-yellow-50 text-yellow-700 border-yellow-200">
+                        <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
+                          <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-medium text-center">Belum Absen</p>
+                        <p className="text-2xl font-bold">{stats.pending}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="font-medium text-slate-600">Tingkat Kehadiran</span>
+                        <span className="font-bold text-slate-800">{attendancePercentage.toFixed(0)}%</span>
+                      </div>
+                      <ProgressBar value={attendancePercentage} />
+                    </div>
+                  </div>
+                </Card>
               </div>
-            )}
+
+              {assignedPegawai.length > 0 && (
+                 <Accordion type="single" collapsible className="w-full bg-white rounded-xl border border-slate-200 shadow-sm px-4">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger className="text-lg font-bold text-slate-900 hover:no-underline">
+                      {`Lihat Pegawai yang Ditugaskan (${assignedPegawai.length})`}
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {assignedPegawai.map((pegawaiItem) => (
+                          <PegawaiCard key={pegawaiItem.id} pegawai={pegawaiItem} attendanceStatus={getAttendanceStatus(pegawaiItem.id!)} />
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      <EventDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        event={event}
-      />
-
-      {/* Add QRCodeGenerator component here */}
-      <QRCodeGenerator
-        open={qrDialogOpen}
-        onOpenChange={setQrDialogOpen}
-        eventData={event}
-      />
+      
+      <EventDialog open={editDialogOpen} onOpenChange={setEditDialogOpen} event={event} />
+      <QRCodeGenerator open={qrDialogOpen} onOpenChange={setQrDialogOpen} eventData={event} />
     </>
   );
 };

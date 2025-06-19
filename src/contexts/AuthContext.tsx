@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.tsx
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, ReactNode } from 'react';
 import {
   User,
   signInWithEmailAndPassword,
@@ -8,131 +8,127 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore'; // getDoc tidak digunakan, bisa dihapus jika tidak diperlukan
+import { doc, setDoc, onSnapshot, serverTimestamp, FieldValue } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { AuthContext, AuthContextType, UserProfile } from '@/contexts/AuthContextDefinition';
+import { AppUser, AuthContext, AuthContextType, UserProfile } from '@/contexts/AuthContextDefinition';
 import { useToast } from '@/components/ui/use-toast';
 
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true); // Initial state is true
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [appUser, setAppUser] = useState<AppUser | null>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email, password);
-  };
+  }, []);
 
-  const register = async (email: string, password: string, profile: Partial<UserProfile>) => {
+  const register = useCallback(async (email: string, password: string, profile: Partial<UserProfile>) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
-    const userProfile: UserProfile = {
+
+    const newProfile: UserProfile = {
       uid: user.uid,
       email: user.email!,
-      displayName: profile.displayName || profile.name || '',
+      displayName: profile.displayName || '',
+      photoURL: profile.photoURL || user.photoURL || undefined,
+      phoneNumber: profile.phoneNumber || user.phoneNumber || undefined,
       role: profile.role || 'employee',
       department: profile.department,
       position: profile.position,
       employeeId: profile.employeeId,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      notifications: profile.notifications,
+      systemSettings: profile.systemSettings,
     };
 
-    await setDoc(doc(db, 'users', user.uid), userProfile);
-  };
+    await setDoc(doc(db, 'users', user.uid), newProfile);
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await signOut(auth);
       toast({
         title: "Success",
         description: "Logout successful.",
       });
-    } catch (error: any) { // Tambahkan any untuk tipe error
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast({
         title: "Error",
-        description: `Error during logout: ${error.message}`,
+        description: `Error during logout: ${errorMessage}`,
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
-    let unsubscribeUserProfile: (() => void) | undefined; // Deklarasi untuk menyimpan fungsi unsubscribe onSnapshot
+    // ... (kode useEffect tetap sama seperti sebelumnya) ...
+    let unsubscribeUserProfile: (() => void) | undefined;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      
+    const unsubscribeAuth = onAuthStateChanged(auth, (user: User | null) => {
       if (user) {
         const userDocRef = doc(db, 'users', user.uid);
-        // Pastikan unsubscribe dari langganan profil sebelumnya jika ada
-        if (unsubscribeUserProfile) {
-          unsubscribeUserProfile();
-        }
-        // Subscribe ke user profile dan simpan fungsi unsubscribe
+        if (unsubscribeUserProfile) unsubscribeUserProfile();
+
         unsubscribeUserProfile = onSnapshot(userDocRef, (docSnapshot) => {
           if (docSnapshot.exists()) {
-            setUserProfile(docSnapshot.data() as UserProfile);
-          } else {
-            setUserProfile(null);
-            // Optional: Log jika profil tidak ditemukan, mungkin ada inkonsistensi data
-            console.warn(`User profile not found for UID: ${user.uid}`);
-          }
-          // Di sini Anda bisa mempertimbangkan untuk mematikan loading juga
-          // jika profil adalah bagian esensial dari proses loading.
-          // Namun, biarkan setLoading(false) di luar if/else if ini
-          // agar selalu dipanggil setelah onAuthStateChanged selesai.
-        }, (error) => { // Tambahkan error handling untuk onSnapshot
-            console.error("Error fetching user profile:", error);
-            setUserProfile(null);
-            toast({
-                title: "Error",
-                description: `Error fetching user profile: ${error.message}`,
-                variant: "destructive",
+            const profileData = docSnapshot.data() as UserProfile;
+            setAppUser({
+              ...profileData,
+              uid: user.uid,
+              email: user.email!,
+              emailVerified: user.emailVerified,
             });
+          } else {
+            console.warn(`User profile not found for UID: ${user.uid}.`);
+            setAppUser({
+                uid: user.uid,
+                email: user.email!,
+                displayName: user.displayName || '',
+                photoURL: user.photoURL || undefined,
+                phoneNumber: user.phoneNumber || undefined,
+                emailVerified: user.emailVerified,
+                role: 'employee',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+          }
+          setLoading(false);
+        }, (error) => {
+          console.error("Error fetching user profile:", error);
+          setAppUser(null);
+          setLoading(false);
+          toast({
+            title: "Error",
+            description: `Failed to fetch user profile: ${error.message}`,
+            variant: "destructive",
+          });
         });
       } else {
-        // Jika tidak ada user, pastikan juga unsubscribe dari profile sebelumnya
-        if (unsubscribeUserProfile) {
-          unsubscribeUserProfile();
-          unsubscribeUserProfile = undefined; // Reset
-        }
-        setUserProfile(null);
+        if (unsubscribeUserProfile) unsubscribeUserProfile();
+        setAppUser(null);
+        setLoading(false);
       }
-      
-      // Penting: Pastikan setLoading(false) dipanggil setelah onAuthStateChanged selesai memproses.
-      // Ini harus di luar blok if (user) untuk memastikan selalu dipanggil.
-      setLoading(false); 
     });
 
-    // Cleanup function untuk useEffect
     return () => {
-      unsubscribeAuth(); // Unsubscribe dari onAuthStateChanged
-      if (unsubscribeUserProfile) { // Pastikan unsubscribe dari onSnapshot jika masih ada
-        unsubscribeUserProfile();
-      }
+      unsubscribeAuth();
+      if (unsubscribeUserProfile) unsubscribeUserProfile();
     };
-  }, [toast]); // Dependency array: Pastikan ini benar.
+  }, [toast]);
 
-  const value: AuthContextType = {
-    currentUser,
-    userProfile,
+  // Sekarang, `useMemo` tidak perlu menyertakan fungsi-fungsi karena mereka sudah stabil
+  const value = useMemo(() => ({
+    appUser,
     login,
     register,
     logout,
     loading
-  };
+  }), [appUser, loading, login, register, logout]);
 
   return (
     <AuthContext.Provider value={value}>
-      {/*
-        PERBAIKAN UTAMA DI SINI:
-        Hapus kondisi {!loading && children}.
-        Biarkan children selalu dirender. ProtectedRoute akan menangani
-        tampilan loading dan redireksi berdasarkan 'loading' dan 'currentUser'.
-      */}
       {children}
     </AuthContext.Provider>
   );

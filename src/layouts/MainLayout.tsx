@@ -9,7 +9,7 @@ import Footer from '@/components/layout/Footer';
 import { AppLogo } from '@/components/branding/AppLogo';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { NavLinkItem } from '@/components/navigation/NavLinkItem';
-import { useAuth } from '@/contexts/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { AuthContextType } from '@/contexts/AuthContextDefinition';
 
 const MainLayout: React.FC = () => {
