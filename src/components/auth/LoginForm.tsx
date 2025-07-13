@@ -1,6 +1,6 @@
-'use client'; // Diperlukan jika menggunakan Next.js App Router
+'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -28,7 +28,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 export function LoginForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth(); // Asumsi fungsi login Anda menangani API call
+  const { login, appUser, loading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   // 1. Inisialisasi React Hook Form
@@ -53,7 +53,7 @@ export function LoginForm() {
         description: "Selamat datang kembali. Anda akan diarahkan ke dashboard.",
         variant: "success",
       });
-      navigate('/'); // Redirect setelah berhasil
+      // Hapus navigate('/') dari sini
     } catch (error) {
       toast({
         title: "Login Gagal",
@@ -62,6 +62,12 @@ export function LoginForm() {
       });
     }
   };
+
+  useEffect(() => {
+    if (appUser && !loading) {
+      navigate('/');
+    }
+  }, [appUser, loading, navigate]);
 
   return (
     // 3. Integrasi dengan komponen Form dari shadcn/ui
